@@ -1,0 +1,41 @@
+PLINK v1.90b6.21 64-bit (19 Oct 2020)
+Options in effect:
+  --allow-extra-chr
+  --double-id
+  --extract a_thaliana.prune.in
+  --make-bed
+  --out /home/group.kurse/qbcbp014/project/plink/a_thaliana
+  --pca
+  --set-missing-var-ids @:#
+  --vcf /home/group.kurse/qbcbp014/project/group_3_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz
+
+Hostname: cheops1
+Working directory: /home/group.kurse/qbcbp014
+Start time: Wed Dec 20 16:20:57 2023
+
+Random number seed: 1703085657
+72098 MB RAM detected; reserving 36049 MB for main workspace.
+--vcf: /home/group.kurse/qbcbp014/project/plink/a_thaliana-temporary.bed +
+/home/group.kurse/qbcbp014/project/plink/a_thaliana-temporary.bim +
+/home/group.kurse/qbcbp014/project/plink/a_thaliana-temporary.fam written.
+2029639 variants loaded from .bim file.
+2029639 missing IDs set.
+76 people (0 males, 0 females, 76 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+/home/group.kurse/qbcbp014/project/plink/a_thaliana.nosex .
+--extract: 195559 variants remaining.
+Using up to 8 threads (change this with --threads).
+Before main variant filters, 76 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.773719.
+195559 variants and 76 people pass filters and QC.
+Note: No phenotypes present.
+Relationship matrix calculation complete.
+--pca: Results saved to
+/home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenval and
+/home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenvec .
+--make-bed to /home/group.kurse/qbcbp014/project/plink/a_thaliana.bed +
+/home/group.kurse/qbcbp014/project/plink/a_thaliana.bim +
+/home/group.kurse/qbcbp014/project/plink/a_thaliana.fam ... done.
+
+End time: Wed Dec 20 16:21:08 2023
