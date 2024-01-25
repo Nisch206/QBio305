@@ -262,3 +262,298 @@ a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
 a <- a + facet_grid(stat~., scales = "free_y")
 a <- a + xlab("Position (Mb)")
 a + theme_light() + theme(legend.position = "none")
+
+
+
+
+
+
+
+
+
+
+
+#### calculate neutrality statistics####
+At_sw <- neutrality.stats(At_sw)
+
+get.neutrality(At_sw)
+
+#Let's look at the first population [[1]].
+get.neutrality(At_sw)[[1]]
+
+#Let's look at the second population [[2]].
+get.neutrality(At_sw)[[2]]
+
+#extract Tajma's D
+td <- At_sw@Tajima.D/100
+
+# set population names
+colnames(td) <- paste0(pops, "_td")
+
+
+###Delimitate windows on chromosome
+
+# set chromosome start and end position
+chri<- 3173382
+chrl <- 3179448
+
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data <- as.tibble(data.frame(windows, td,nd))
+nrow(windows)
+nrow(nd)
+(chrl-chri)/50
+nrow(ara_data)
+head(ara_data)
+ara_data %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+### load selected positions from chromosome e.g., gene 4 5kb upstream and down stream of Defense related genes
+# 
+bed<-read.table("At_defense_only.bed")
+head(bed)
+
+colnames(bed)<-c("chr", "begin","end")
+DF<-vector(length=nrow(ara_data))
+length(DF)
+
+#ara_data <- as.tibble(data.frame(windows, nd, DF))###if you only want to look at pi
+ara_data <- as.tibble(data.frame(windows, nd, td, DF))##if you want to look at tajima D and nucleotide diversity
+
+for (i in 2:nrow(bed)){ara_data$DF[which(ara_data$start>bed$begin[i]&ara_data$stop<bed$end[i]) ]<-"DF"}##each window that overlaps a DF is tagged
+ara_data$DF<-as.factor(ara_data$DF)
+summary(ara_data)
+
+####
+# Italy
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$IT_pi[ara_data$DF=="DF"]
+sub2<-ara_data$IT_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not. 
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$IT_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$IT_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$IT_td[ara_data$DF=="DF"]
+sub2<-ara_data$IT_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$IT_td), na.rm=T), main="Distribution Tajima D", ylim = c(0, 230))
+lines(density((ara_data$IT_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=IT_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$IT_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = IT_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.03, max(ara_data$IT_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D")
+# Center the title
+p <- p + ggtitle("Distribution Tajima D") +
+  theme(plot.title = element_text(hjust = 0.5)) # Adjust the hjust value for centering
+
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,IT_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)
+
+p<-ggplot(sub2, aes(mid,IT_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)+ theme_bw()
+
+####
+# Sweden
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$SWE_pi[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not. 
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$SWE_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$SWE_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$SWE_td[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$SWE_td), na.rm=T), main="Distribution Tajima D")
+lines(density((ara_data$SWE_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=SWE_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+##
+# Base R plot
+plot(density(ara_data$SWE_td, na.rm = TRUE), main = "Distribution Tajima D")
+lines(density(ara_data$SWE_td[ara_data$DF == "DF"], na.rm = TRUE), col = "red")
+
+# ggplot version
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$SWE_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = SWE_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.010, max(ara_data$SWE_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D") + theme_bw()
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,SWE_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+p<-ggplot(sub2, aes(mid,SWE_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+
+
+# FST IT/SWE
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data2 <- as.tibble(data.frame(windows, fst))
+nrow(windows)
+nrow(fst)
+(chrl-chri)/50
+nrow(ara_data2)
+head(ara_data2)
+ara_data2 %>% dplyr::select(contains("fst")) %>% summarise_all(mean)
+
+### load selected positions from chromosome -> flowering time genes ####
+
+bed2<-read.table("At_defense_only.bed")
+head(bed2)
+
+colnames(bed2)<-c("chr", "begin","end")
+DF2<-vector(length=nrow(ara_data2))
+ara_data2 <- as.tibble(data.frame(windows, fst, DF2))
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF22 <- "all"
+} #horrible but works
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF2[which(ara_data2$start>bed2$begin[i]&ara_data2$stop<bed2$end[i])]<-"DF2"
+}
+
+DF2<-vector(length=nrow(ara_data2))
+
+ara_data2$DF2<-as.factor(ara_data2$DF2)
+summary(ara_data2)
+
+
+Defense <- ara_data2 %>% filter(DF2 == "DF2")
+Defense_fst <- Defense %>% filter(IT_SWE_fst >= 0)
+
+a <- ggplot(Defense_fst, aes(mid/10^6, IT_SWE_fst)) + geom_line(colour = "red")
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a + theme_light()
+
+# plot with ara_data FST (<=0 values not removed) and FLOWER_fst (all flowering time FSTs also with <=0 values not removed)
+tip <- ggplot() + 
+  geom_line(data=ara_data2, aes(mid/10^6, IT_SWE_fst), colour = "blue") + 
+  geom_line(data=Defense, aes(mid/10^6, IT_SWE_fst), colour="pink")
+tip <- tip + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+tip + theme_light()
+
+# remove fst values <=0 
+ara_d2 <- ara_data2 %>% filter(IT_SWE_fst >= 0)
+ara_d2
+
+# calculate means
+mean_fst <- mean(ara_d2$IT_SWE_fst)
+mean_defense <- mean(Defense_fst$IT_SWE_fst)
+
+ks.test(ara_d2$IT_SWE_fst, Defense_fst$IT_SWE_fst) 
+#p-value: 1
+
+#outliers 95% quantile
+threshold_95 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.975, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_95 = ifelse(Defense_fst$IT_SWE_fst > threshold_95, "outlier", "background"))
+
+#outliers 99% quantile
+threshold_99 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.995, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_99 = ifelse(Defense_fst$IT_SWE_fst > threshold_99, "outlier", "background"))
+
+# plot with ara data and Defense_fst (all fst values below 0 removed)
+top <- ggplot() + 
+  geom_point(data=ara_d2, aes(mid/10^6, IT_SWE_fst), colour = "lightblue") + 
+  geom_point(data=Defense_fst, aes(mid/10^6, IT_SWE_fst), colour="blue") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_95 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="orange") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_99 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="red") +
+  geom_hline(yintercept = mean_fst) +
+  geom_hline(yintercept = mean_defense, colour="orange")
+
+top <- top + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+top + theme_light()
+
+#################################################################################
+# Draw Density plots
+
+plot(density((ara_d2$IT_SWE_fst), na.rm=T), main="Distribution FST", )
+lines(density((Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"]), na.rm = T), col="red")
+
+p<-ggplot(ara_d2, aes(x=IT_SWE_fst, fill=DF2))
+p+geom_density(alpha=0.4)
+
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_d2$IT_SWE_fst, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.05, max(ara_d2$IT_SWE_fst, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution ESP-SWE FST")
+# plot distribution
+p
+
+# ggplot version with log scale for x-axis
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_log10() +  # Set log scale for x-axis
+  ggtitle("Distribution IT-SWE FST") + 
+  theme_bw()
+
+# plot distribution
+p
+
+############################################################
+### To check where these FST outliers are in the genome ####
+###                                                     ####
+############################################################
+
+# Outliers 95% quantile whole genome
+threshold_95 <- quantile(ara_d2$IT_SWE_fst, 0.95, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_95 = ifelse(ara_d2$IT_SWE_fst > threshold_95, "outlier", "background"))
+ara_d2
+
+# Outliers 99% quantile whole genome
+threshold_99 <- quantile(ara_d2$IT_SWE_fst, 0.99, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_99 = ifelse(ara_d2$IT_SWE_fst > threshold_99, "outlier", "background"))
+ara_d2
+
+out <- ara_d2 %>% filter(outlier_95 == "outlier")
+out2 <- out %>% filter(DF2 == "DF2")
+out2 #no 99% outliers but 2 95% outliers which both correspond to sucrose synthase 3
+
+print(out2,n=50)
+
