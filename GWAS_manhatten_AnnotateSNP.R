@@ -8,13 +8,14 @@
 library(qqman)
 
 # Read GWAS output file created using gemma
-gwas_data_bio17 <- read.table("sample_project_GWAS2.assoc.txt", header = TRUE)
+gwas_data_bio17 <- read.table("gwas_project_result.assoc.txt", header = TRUE)
 
 # Make the Manhattan plot on the gwasResults dataset
-manhattan(gwas_data_bio17, chr="chr", bp="ps", snp="rs", p="p_wald" )
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot", chr="chr", bp="ps", snp="rs", p="p_wald" )
 
 # modify colour of points
-manhattan(x = gwas_data_bio17, chr = "chr", bp = "ps", p = "p_wald", snp = "rs", col = c("blue4", "orange3"), logp = TRUE)
+manhattan(x = gwas_data_bio17, main="GWAS Manhatten Plot", chr = "chr", bp = "ps", p = "p_wald",
+          snp = "rs", col = c("blue4", "orange3"), logp = TRUE)
 
 ##########Bonferroni correction############
 
@@ -28,14 +29,14 @@ pval_bonf <- 0.05  # Desired FDR threshold, you can adjust this if needed
 gwas_data_bio17$pvals_bonf <- pvals_bonf
 
 # Create the Manhattan plot with the new adjusted p-values column
-manhattan(gwas_data_bio17, chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with Boneferri Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
           suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
           annotatePval = -log10(pval_bonf),
           col = c("blue4", "orange3"))
 
 # Create the Manhattan plot with expanded datapoints on the y-axis
-manhattan(gwas_data_bio17, chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
-          suggestiveline = -log10(pvals_bonf), genomewideline = FALSE,
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with Boneferri Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
+          suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
           annotatePval = -log10(pval_bonf),
           col = c("blue4", "orange3"),
           ylim = c(0, max(-log10(pval_bonf)) + 5))  # Expand the y-axis range
@@ -52,7 +53,7 @@ pval_fdr <- 0.05  # Desired FDR threshold, you can adjust this if needed
 gwas_data_bio17$pvals_fdr <- pvals_fdr
 
 # Create the Manhattan plot with the new adjusted p-values column
-manhattan(gwas_data_bio17, chr = "chr", bp = "ps", snp = "rs", p = "pvals_fdr",
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with FDR Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_fdr",
           suggestiveline = -log10(pval_fdr), genomewideline = FALSE,
           annotatePval = -log10(pval_fdr),
           col = c("blue4", "orange3"))
@@ -97,6 +98,7 @@ ggplot(gwas, aes(x=Chromosome, y=-log10(pvals_fdr))) +
                      limits = c(0,1.5)) +
   geom_label_repel(data=subset(gwas, is_annotate=="yes"), aes(label=rs), size=2) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "red") +
+  ggtitle("GWAS Manhatten Plot with SNP Annotation") +
   theme_bw() +
   theme( 
     legend.position="none",

@@ -1,6 +1,6 @@
 
 
-setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/gwas")
+# setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/gwas")
 
 library(qqman)
 
