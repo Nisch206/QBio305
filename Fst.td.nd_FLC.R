@@ -23,7 +23,7 @@ library(tidyr)
 setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/Fst")
 getwd()
 
-At_Chr <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=3173382, topos=3179448, include.unknown =  TRUE)
+At_Chr <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=3173382, topos=3179448, include.unknown =  TRUE)
 
 #To the class of object At_Chr
 class(At_Chr)

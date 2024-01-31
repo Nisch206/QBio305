@@ -15,7 +15,7 @@ manhattan(gwas, chr="chr", bp="ps", snp="rs", p="p_wald" )
 manhattan(x = gwas, chr = "chr", bp = "ps", p = "p_wald", snp = "rs", col = c("blue4", "orange3"), logp = TRUE)
 
 # Multiple testing correction in GWAS (Bonferroni correction)
-pval_bonf = 0.05/dim(gwas)[[1]]
+pval_bonf <- 0.05/dim(gwas)[[1]]
 
 
 #adding multiple-testing-corrected p-value line to the plot

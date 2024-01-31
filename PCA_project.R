@@ -22,7 +22,7 @@ library(plotly)
 # Set the R working directory to the location where you have stored your indexed 'input.vcf' file 
 # and the 'genomic_positions.bed' file." 
 
-setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/pca")
+# setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/pca")
 
 # If you want to check number columns and start and stop positions then you have to read 
 # your "input.vcf" file using "read.vcfR" function from "vcfR" package
@@ -34,13 +34,13 @@ genind_vcf <- vcfR2genind(vcf_file)
 
 
 # Scale genind object for PCA
-genind_vcf_scaled = scaleGen(genind_vcf, NA.method = "mean")
+genind_vcf_scaled <- scaleGen(genind_vcf, NA.method = "mean")
 
 # Perform PCA
 pca <- dudi.pca(genind_vcf_scaled, cent = TRUE, scale = FALSE, scannf = FALSE, nf = 10)
 
 # Check PCA dimensions
-axis_all = pca$eig * 100 / sum(pca$eig)
+axis_all <- pca$eig * 100 / sum(pca$eig)
 barplot(axis_all[1:10], main = "PCA eigenvalues")
 
 str(pca)

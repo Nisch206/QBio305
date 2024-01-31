@@ -10,7 +10,7 @@ setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/climate_data_project")
 # "coordinates.txt" this file is created for sample project, create a tab separated text file consisting of
 # four columns (sample pop lat lon) for set of samples you are using for using project
 # order of samples should be the same as in your project VCF file.
-samples = read.table("coordinates_project.txt", header = T)
+samples <- read.table("coordinates_project.txt", header = T)
 head(samples)
 lon<-samples$lon
 lat<-samples$lat
@@ -20,7 +20,7 @@ xy <- samples[, c("lon", "lat")]
 str(xy)
 # Load BioClim data. The following command checks if the data is present at the 
 # specified path. If the data is not present, it will be downloaded. Don't Forget to change the path to a folder where you stored your climate data
-biodata = worldclim_global(var = "bio", res = 10, "C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/climate_data_project")
+biodata <- worldclim_global(var = "bio", res = 10, "C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/climate_data_project")
 biodata # inspect the data
 
 # Names of all bioclim variables
@@ -48,11 +48,11 @@ layer_data <- biodata[[layer_index]]
 plot(layer_data, col = terrain.colors(255), main = paste("Mean Temperature of Coldest Quarter", layer_index))
 
 # Extract Biolclimatic varaibles using xy coordinates dataframe
-biodata_extract = extract(biodata[[1:19]], xy, df = T)
+biodata_extract <- extract(biodata[[1:19]], xy, df = T)
 summary(biodata_extract) 
 
 #Attach it to the original df
-samples_bio = cbind(samples, biodata_extract)
+samples_bio <- cbind(samples, biodata_extract)
 
 plot(samples_bio$wc2.1_10m_bio_1)
 # Extract required Climatic variable, for example we need 

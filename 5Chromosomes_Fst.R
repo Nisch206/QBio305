@@ -37,21 +37,21 @@ str(pop)
 
 # Extract population data
 pop1 <- pop$pop
-pop2 = as.factor(pop1)
-genlight_vcf$pop = pop2
+pop2 <- as.factor(pop1)
+genlight_vcf$pop <- pop2
 
 # Convert genlight to stampp object
-stampp_vcf = stamppConvert(genlight_vcf, type = "genlight")
+stampp_vcf <- stamppConvert(genlight_vcf, type = "genlight")
 
 # Calculate FST between populations
-stamppFst = stamppFst(stampp_vcf, nboots = 100, percent = 95, nclusters = 8)
-stamppFst_matrix = as.matrix(stamppFst$Fsts)
+stamppFst <- stamppFst(stampp_vcf, nboots = 100, percent = 95, nclusters = 8)
+stamppFst_matrix <- as.matrix(stamppFst$Fsts)
 
 # Set diagonal to 0 and add symmetrical upper tri part of matrix
 diag(stamppFst_matrix) <- 0
 stamppFst_matrix[upper.tri(stamppFst_matrix)]  <- t(stamppFst_matrix)[upper.tri(stamppFst_matrix)]
 # Optional: order the names
-stamppFst_matrix = stamppFst_matrix[order(row.names(stamppFst_matrix)), order(colnames(stamppFst_matrix))]
+stamppFst_matrix <- stamppFst_matrix[order(row.names(stamppFst_matrix)), order(colnames(stamppFst_matrix))]
 
 # Make an FST heatmap
 heatmap(stamppFst_matrix,
@@ -62,8 +62,8 @@ heatmap(stamppFst_matrix,
 
 #calculate genetic distance between individuals - nei's
 
-stamppNeisD = stamppNeisD(stampp_vcf, pop = FALSE)
-stamppNeisD_matrix = as.matrix(stamppNeisD)
+stamppNeisD <- stamppNeisD(stampp_vcf, pop = FALSE)
+stamppNeisD_matrix <- as.matrix(stamppNeisD)
 
 # Set diagonal to 0 and add symmetrical upper tri part of matrix
 diag(stamppNeisD_matrix) <- 0

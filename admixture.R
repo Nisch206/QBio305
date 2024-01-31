@@ -37,9 +37,9 @@ colnames(CV) <- c("CV","K")
 # the lowest cross validation error
 # when the cross-validation error decrease the most
 
-graph_title="Cross-Validation plot"
-x_title="K"
-y_title="Cross-validation error"
+graph_title <- "Cross-Validation plot"
+x_title <- "K"
+y_title <- "Cross-validation error"
 graph_1<-ggplot(CV,aes(x=K,y=CV))
 graph_1+geom_line()+scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10))+
   labs(title=graph_title)+
