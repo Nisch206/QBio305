@@ -1,0 +1,200 @@
+### VCF file analysis 
+
+mkdir project
+cd /home/group.kurse/qbcbp014/project
+module load bcftools/1.18
+
+#List samples accessions
+bcftools query -l group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz
+
+#Count accessions 
+bcftools query -l group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz  | wc -l
+
+# List of positions
+bcftools query -f '%POS\n' group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz | head -n 10
+
+# List of positions and alleles
+bcftools query -f '%CHROM %POS %REF %ALT\n' group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz | head -n 10
+
+
+
+
+### Plink
+
+# Download and Install Plink
+cd /home/group.kurse/qbcbp014/tools/
+mkdir plink
+wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20201019.zip
+
+# unzip to contents to plink directory
+unzip plink_linux_x86_64_20201019.zip -d plink
+
+echo 'export PATH="/home/group.kurse/qbcbp014/tools/plink:$PATH"' >>/home/group.kurse/qbcbp014/.bashrc
+
+source /home/group.kurse/qbcbp014/.bashrc
+plink
+
+### Admixture 
+
+# Download and install Admixture
+git clone https://github.com/NovembreLab/admixture.git
+
+echo 'export PATH="/home/group.kurse/qbcbp014/tools/admixture/releases/admixture_linux-1.3.0/:$PATH"' >>/home/group.kurse/qbcbp014/.bashrc
+
+source /home/group.kurse/qbcbp014/.bashrc
+admixture
+
+
+
+# Go back to home directory
+cd /home/group.kurse/qbcbp014/
+
+# Create in the directory “project” at “/home/group.kurse/qbcbp014/” the following subdirectories: plink, admixture, stacks, vcftools
+
+mkdir -p project/{plink,admixture,stacks,vcftools}
+
+
+# pca 
+
+
+VCF="/home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz"
+
+# perform linkage pruning - i.e. identify prune sites
+plink --vcf $VCF --double-id --allow-extra-chr \
+--set-missing-var-ids @:# \
+--indep-pairwise 50 10 0.1 --out a_thaliana
+
+# prune and create pca
+plink --vcf $VCF --double-id --allow-extra-chr --set-missing-var-ids @:# \
+--extract a_thaliana.prune.in \
+--make-bed --pca --out /home/group.kurse/qbcbp014/project/plink/a_thaliana
+
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.nosex /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.log /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.fam /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenvec /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenval /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.bim /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.bed /home/group.kurse/qbcbp014/project/admixture
+
+cd /home/group.kurse/qbcbp014/project/admixture
+
+# Generate the input file in plink format
+FILE=a_thaliana
+
+plink --double-id --vcf /home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz --make-bed --out $FILE --allow-extra-chr
+
+
+################################### theory
+#### Use plink to run LD pruning -> create prune.in and prune.out files for pca and .fam. .bim . bam files for GEA 
+#### RUN PCA with PLINK
+
+$ plink --vcf /home/group.kurse/qbcbp014/project/1001genomes_snp-short-indel
+_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing_80SwEs_DefenseOnly.vcf.gz
+ --indep-pairwise 50 10 0.1 --allow-extra-chr --out sample_project_plink_ldprune
+
+# This generates "sample_project_plink_ldprune.prune.in" & "sample_project_plink_ldprune.prune.out":
+# the former includes variants below the LD threshold for retention, while the latter includes variants
+# above the LD threshold. "--indep-pairwise 50 10 0.1" is linkage pruning in 50kb window, with window step
+# size of 10, r squared threshold is set to 0.1, pruning any variables with r squared greater than 0.1
+
+### Perform PCA using Plink
+$ plink --vcf /home/group.kurse/qbcbp014/project/1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing_80SwEs_DefenseOnly.vcf.gz --extract sample_project_plink_ldprune.prune.in --make-bed --pca --out sample_project_plink
+
+# This generates "sample_project_plink.eigenval" and "sample_project_plink.eigenvec" for PCA analysis.
+# Use option "--make-bed" for additional files needed for ADMIXTURE,  The binary files "sample_project_plink.bed" &
+# "sample_project_plink.bim," and "sample_project_plink.fam" are produced, which will be utilized in GWAS.
+
+###########################################
+
+# ADMIXTURE does not accept chromosome names that are not human chromosomes. We will thus just exchange the first column by 0
+awk '{$1="0";print $0}' $FILE.bim > $FILE.bim.tmp 
+mv $FILE.bim.tmp $FILE.bim
+
+#Run ADMIXTURE. We will run it with cross-validation (the default is 5-fold CV, for higher, choose e.g. cv=10) and K=2.
+
+admixture --cv $FILE.bed 2 > log2.out 
+
+
+#Let’s now run it in a for loop with K=2 to K=10 and direct the output into log files
+
+for i in {1..10}
+do
+ admixture --cv $FILE.bed $i > log${i}.out
+done
+
+
+###
+#To identify the best value of k clusters which is the value with lowest cross-validation error, we need to collect the cv errors.
+#Below are three different ways to extract the number of K and the CV error for each corresponding K.
+#Like we said at the start of the course, there are many ways to achieve the same thing in bioinformatics!
+###
+
+FILE=a.thaliana
+awk '/CV/ {print $3,$4}' *out | cut -c 4,7-20 > $FILE.cv.error
+cat a.thaliana.cv.error
+
+
+
+#Find the optimal number of clusters
+Collect the cross validation information obtained from the all the log files.
+
+grep -h CV log*.out>cross_validation.txt
+
+1: 0.19178
+1 0.17293
+2 0.15986
+3 0.15546 #
+4 0.15697
+5 0.16731
+6 0.17408
+7 0.18058
+8 0.18052
+9 0.19249
+
+
+# It seems cluster 3 is the best!
+
+cross_validation file 
+
+
+CV error (K=10): 0.19178
+CV error (K=1): 0.17293
+CV error (K=2): 0.15986
+CV error (K=3): 0.15546
+CV error (K=4): 0.15697
+CV error (K=5): 0.16731
+CV error (K=6): 0.17408
+CV error (K=7): 0.18058
+CV error (K=8): 0.18052
+CV error (K=9): 0.19249
+
+
+### GWAS
+
+cd /home/group.kurse/qbcbp014/project/gwas
+
+module load miniconda
+conda create -n gemma
+conda activate gemma
+conda install -c bioconda gemma
+
+
+cp /home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz /home/group.kurse/qbcbp014/project/gwas
+
+plink --vcf group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz --make-bed --out /home/group.kurse/qbcbp014/project/admixture/prefix_of_plink_bfiles
+
+gemma --bfile prefix_of_plink_bfiles -p bio19.txt -n 1 -k /home/group.kurse/qbcbp014/project/gwas/output/my_kinship_output.cXX.txt -lmm 4 -o gwas_project_result -miss 0.9 -r2 1 -hwe 0 -maf 0.05
+
+
+
+
+
+
+
+
+
+
+
+
+

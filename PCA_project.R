@@ -1,31 +1,18 @@
 # Principle Component Analysis (PCA)
 
-
 # load all required packages
 
-library(PopGenome) 
-library(dplyr)
-library(ggplot2)
-library (readr)
-library(tibble)
-library(vcfR)
-library(adegenet)
+library(ggplot2) 
+library(vcfR) 
+library(adegenet) 
 library(factoextra)
-library(FactoMineR)
-library(tidyverse)
-library(ggrepel)
-library(gplots)
-library(StAMPP)
-library(RColorBrewer)
-library(plotly)
+library(FactoMineR) 
+library(plotly) 
+library(tibble)
+library(cowplot)
 
-# Set the R working directory to the location where you have stored your indexed 'input.vcf' file 
-# and the 'genomic_positions.bed' file." 
-
-# setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/pca")
-
-# If you want to check number columns and start and stop positions then you have to read 
-# your "input.vcf" file using "read.vcfR" function from "vcfR" package
+# Set the R working directory 
+setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
 
 vcf_file <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
 
@@ -34,18 +21,18 @@ genind_vcf <- vcfR2genind(vcf_file)
 
 
 # Scale genind object for PCA
-genind_vcf_scaled <- scaleGen(genind_vcf, NA.method = "mean")
+genind_vcf_scaled = scaleGen(genind_vcf, NA.method = "mean")
 
 # Perform PCA
 pca <- dudi.pca(genind_vcf_scaled, cent = TRUE, scale = FALSE, scannf = FALSE, nf = 10)
 
 # Check PCA dimensions
-axis_all <- pca$eig * 100 / sum(pca$eig)
+axis_all = pca$eig * 100 / sum(pca$eig)
 barplot(axis_all[1:10], main = "PCA eigenvalues")
 
 str(pca)
 summary(pca)
-#ind <- pca$rank
+
 pca_axis <- pca$li
 pca_eigenval <- pca$eig[1:10]
 str(pca_axis)
@@ -76,7 +63,7 @@ pop<-pca_axis$Population
 pca_2 <- as.tibble(data.frame(pca_axis, population_labels))
 
 n <- length(pca_eigenval)
-n # use this number PC=1:n
+n
 
 # first convert to percentage variance explained
 pve <- data.frame(PC = 1:10, pve = pca_eigenval/sum(pca_eigenval)*100)
@@ -92,34 +79,59 @@ str(pca_2)
 
 # plot pca PC1 and PC2
 b <- ggplot(pca_2, aes(Axis1, Axis2, col = pop)) + 
-  geom_point(size = 4) +
-  scale_colour_manual(values = c("red", "orange", "blue", "lightblue")) + #use same color and same sequence for admixture
+  geom_point(size = 6) +  #
+  scale_colour_manual(values = c("red", "orange", "blue", "lightblue")) +
   coord_equal() +
   theme_light() +
   xlab(paste0("PC1 (", signif(pve$pve[1], 3), "%)")) +
   ylab(paste0("PC2 (", signif(pve$pve[2], 3), "%)")) +
-  ggtitle("Arabidopsis thaliana Accessions from Italy (IT) and Sweden (SWE)") +
-  theme(plot.title = element_text(hjust = 0.5),  # Center title
-        plot.margin = margin(20, 20, 20, 20))   # Adjust margin for title
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        axis.text = element_text(size = 12),  
+        axis.title = element_text(size = 14),  
+        legend.text = element_text(size = 12),  
+        legend.title = element_text(size = 14),  
+        plot.margin = margin(20, 20, 20, 20)) 
 
 # Print the plot
 print(b)
 
-# plot pca PC1 and PC3
 
-b <- ggplot(pca_2, aes(Axis1, Axis3, col = pop)) + 
-  geom_point(size = 4) +
+# plot pca PC1 and PC3
+c <- ggplot(pca_2, aes(Axis1, Axis3, col = pop)) + 
+  geom_point(size = 6) +  
   scale_colour_manual(values = c("red", "orange", "blue", "lightblue")) +
   coord_equal() +
   theme_light() +
   xlab(paste0("PC1 (", signif(pve$pve[1], 3), "%)")) +
   ylab(paste0("PC3 (", signif(pve$pve[3], 3), "%)")) +
-  ggtitle("Arabidopsis thaliana Accessions from Italy (IT) and Sweden (SWE)") +
-  theme(plot.title = element_text(hjust = 0.5),  # Center title
-        plot.margin = margin(20, 20, 20, 20))   # Adjust margin for title
+  theme(plot.title = element_text(hjust = 0.5, size = 16),  
+        axis.text = element_text(size = 12),  
+        axis.title = element_text(size = 14), 
+        legend.text = element_text(size = 12),  
+        legend.title = element_text(size = 14),  
+        plot.margin = margin(20, 20, 20, 20))  
 
 # Print the plot
 print(b)
+
+
+combined_plots <- plot_grid(b,c, labels = "AUTO", nrow = 1)
+
+overall_title <- ggdraw() +
+  draw_label(" PCA of Arabidopsis thaliana Accessions from Italy (IT) and Sweden (SWE)", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
 
 #3D plot
 
@@ -133,13 +145,6 @@ fig <- fig %>%
   )
 
 fig
-
-
-
-
-
-
-
 
 
 

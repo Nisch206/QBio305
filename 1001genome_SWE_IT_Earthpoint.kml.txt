@@ -1,0 +1,1644 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>1001genome_Earthpoint</name>
+	<open>1</open>
+	<Snippet maxLines="0"></Snippet>
+	<description><![CDATA[<style type='text/css'>*{font-family:Verdana,Arial,Helvetica,Sans-Serif;}</style><table style="width: 300px;"><tr><td style="vertical-align: top;">Source</td><td style="width: 100%;">1001genome_Earthpoint.xlsx</td></tr><tr><td>DateTime</td><td>2023-12-04 15:55:22 UTC <br/></td></tr><tr><td colspan="2" style="vertical-align: top;"><br/>Created with <a target='_blank' href='https://www.earthpoint.us/ExcelToKml.aspx'>Earth Point Excel To KML</a><br/>&copy;2023 Earth Point<br/><br/>For illustration only.&nbsp; User to verify all information. </td></tr></table>]]></description>
+	<Style>
+		<IconStyle>
+			<Icon>
+			</Icon>
+		</IconStyle>
+		<BalloonStyle>
+			<text>$[description]</text>
+		</BalloonStyle>
+	</Style>
+	<Style id="Highlight0_0">
+		<IconStyle>
+			<color>ff00ffff</color>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://www.earthpoint.us/Dots/GoogleEarth/WhiteShapes/placemark_circle.png</href>
+			</Icon>
+		</IconStyle>
+		<LineStyle>
+			<width>3</width>
+		</LineStyle>
+		<BalloonStyle>
+			<text>$[description]</text>
+		</BalloonStyle>
+	</Style>
+	<Style id="Normal0_0">
+		<IconStyle>
+			<color>ff00ffff</color>
+			<Icon>
+				<href>http://www.earthpoint.us/Dots/GoogleEarth/WhiteShapes/placemark_circle.png</href>
+			</Icon>
+		</IconStyle>
+		<LabelStyle>
+			<color>00000000</color>
+		</LabelStyle>
+		<LineStyle>
+			<width>2</width>
+		</LineStyle>
+		<BalloonStyle>
+			<text>$[description]</text>
+		</BalloonStyle>
+	</Style>
+	<StyleMap id="0_0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#Normal0_0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#Highlight0_0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder>
+		<name>Sheet2</name>
+		<Placemark>
+			<name>1061</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Brösarp-11-135,   Country:SWE,   SRA_No:SRR1945481,   Sequenced by:GMI,   Collector:Jon Ågren,   CS Number:CS76727,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.1333</longitude>
+				<latitude>55.7167</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.1333,55.7167,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>5836</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Boo2-3,   Country:SWE,   SRA_No:SRR1945589,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77906,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.51</longitude>
+				<latitude>55.86</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.51,55.86,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark id="040DEA730A2DBD039741">
+			<name>5856</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Dör-10,   Country:SWE,   SRA_No:SRR1945591,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76806,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>17.4914</longitude>
+				<latitude>63.0167</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>17.4914,63.01669999999999,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>5860</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Dra-3,   Country:SWE,   SRA_No:SRR1945592,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77913,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.0165</longitude>
+				<latitude>62.6814</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.0165,62.6814,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6009</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Eden-1,   Country:SWE,   SRA_No:SRR1945604,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76826,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.177</longitude>
+				<latitude>62.877</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.177,62.877,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6030</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Grön-5,   Country:SWE,   SRA_No:SRR1945618,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76893,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.1896</longitude>
+				<latitude>62.806</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.1896,62.806,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6034</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Hov1-7,   Country:SWE,   SRA_No:SRR1945619,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76932,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.74</longitude>
+				<latitude>56.1</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.74,56.09999999999999,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6043</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Löv-1,   Country:SWE,   SRA_No:SRR1945627,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77049,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.079</longitude>
+				<latitude>62.801</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.079,62.801,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6070</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Omn-1,   Country:SWE,   SRA_No:SRR1945631,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77145,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.3448</longitude>
+				<latitude>62.9308</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.3448,62.9308,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6100</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:T1110,   Country:SWE,   SRA_No:SRR1945650,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77294,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.2</longitude>
+				<latitude>55.6</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.2,55.6,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6104</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:T1160,   Country:SWE,   SRA_No:SRR1945653,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77296,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.2</longitude>
+				<latitude>55.7</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.2,55.7,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6114</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:T570,   Country:SWE,   SRA_No:SRR1945662,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77305,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.1342</longitude>
+				<latitude>55.8097</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.1342,55.80970000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6122</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:T670,   Country:SWE,   SRA_No:SRR1945666,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77308,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.3075</longitude>
+				<latitude>55.8364</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.3075,55.8364,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6150</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:T980,   Country:SWE,   SRA_No:SRR1945685,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77327,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.5319</longitude>
+				<latitude>55.9261</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.5319,55.9261,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6153</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TAA 03,   Country:SWE,   SRA_No:SRR1945687,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77329,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>17.7422</longitude>
+				<latitude>62.6425</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>17.7422,62.64250000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6154</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TAA 04,   Country:SWE,   SRA_No:SRR1945688,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77330,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>17.7406</longitude>
+				<latitude>62.6422</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>17.7406,62.6422,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6217</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TFÄ 07,   Country:SWE,   SRA_No:SRR1945713,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77363,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.3283</longitude>
+				<latitude>63.0169</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.3283,63.0169,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6231</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TNY 04,   Country:SWE,   SRA_No:SRR1945717,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77368,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.2844</longitude>
+				<latitude>62.96</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.2844,62.96,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6238</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TOM 04,   Country:SWE,   SRA_No:SRR1945720,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77374,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.37</longitude>
+				<latitude>62.9818</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.37,62.9818,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6243</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Tottarp-2,   Country:SWE,   SRA_No:SRR1945724,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77381,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>13.90045</longitude>
+				<latitude>56.27373</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.90045,56.27373,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6244</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:TRÄ 01,   Country:SWE,   SRA_No:SRR1945725,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77384,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.4728</longitude>
+				<latitude>62.9169</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.4728,62.9169,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>6413</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Ull3-4,   Country:SWE,   SRA_No:SRR1945735,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS78819,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.97</longitude>
+				<latitude>56.06</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.97,56.06,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>7025</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Bl-1,   Country:ITA,   SRA_No:SRR1945813,   Sequenced by:Salk,   Collector:Albert Kranz,   CS Number:CS76450,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3396</longitude>
+				<latitude>44.5041</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3396,44.5041,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>7333</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Sei-0,   Country:ITA,   SRA_No:SRR1945901,   Sequenced by:Salk,   Collector:Albert Kranz,   CS Number:CS76599,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.5614</longitude>
+				<latitude>46.5438</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.5614,46.5438,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>7354</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Ting-1,   Country:SWE,   SRA_No:SRR1945911,   Sequenced by:Salk,   Collector:Maarten Koornneef,   CS Number:CS76612,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.9</longitude>
+				<latitude>56.5</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.9,56.5,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>8222</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Lis-2,   Country:SWE,   SRA_No:SRR1945964,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77043,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.8078</longitude>
+				<latitude>56.0655</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.8078,56.0655,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>8227</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:THÖ 03,   Country:SWE,   SRA_No:SRR1945965,   Sequenced by:GMI,   Collector:Mattias Jakobsson,   CS Number:CS77367,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>17.9103</longitude>
+				<latitude>62.7989</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>17.9103,62.79890000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>8231</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Brö1-6,   Country:SWE,   SRA_No:SRR1945967,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76726,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>16</longitude>
+				<latitude>56.3</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16,56.3,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>8258</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Bå4-1,   Country:SWE,   SRA_No:SRR1945984,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS76677,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>12.933</longitude>
+				<latitude>56.4329</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>12.933,56.4329,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>8376</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Sanna-2,   Country:SWE,   SRA_No:SRR1946007,   Sequenced by:GMI,   Collector:Magnus Nordborg,   CS Number:CS77234,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18</longitude>
+				<latitude>62.69</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18,62.68999999999999,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9321</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Ådal 1,   Country:SWE,   SRA_No:SRR1946056,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76643,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.336</longitude>
+				<latitude>62.8622</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.336,62.8622,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9363</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:EdJ 2,   Country:SWE,   SRA_No:SRR1946064,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76833,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.4045</longitude>
+				<latitude>62.9147</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.4045,62.9147,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9371</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:FäL 1,   Country:SWE,   SRA_No:SRR1946067,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76852,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.3175</longitude>
+				<latitude>63.016</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.3175,63.016,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9395</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Hal-1,   Country:SWE,   SRA_No:SRR1946078,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76908,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>15.0105</longitude>
+				<latitude>57.5089</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>15.0105,57.5089,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9408</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Kal 1,   Country:SWE,   SRA_No:SRR1946084,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76959,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>13.9519</longitude>
+				<latitude>56.047</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>13.9519,56.047,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9409</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Kia 1,   Country:SWE,   SRA_No:SRR1946085,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS76968,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.302</longitude>
+				<latitude>56.0573</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.302,56.0573,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9421</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Lan 1,   Country:SWE,   SRA_No:SRR1946089,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS77009,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.3997</longitude>
+				<latitude>55.9745</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.3997,55.97450000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9427</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Näs 2,   Country:SWE,   SRA_No:SRR1946090,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS77122,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.4055</longitude>
+				<latitude>62.8815</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.4055,62.8815,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9433</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Nyl 13,   Country:SWE,   SRA_No:SRR1946091,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS77135,   Admixture Group: north_sweden</description>
+			<LookAt>
+				<longitude>18.3203</longitude>
+				<latitude>62.9952</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>18.3203,62.9952,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9436</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Puk-1,   Country:SWE,   SRA_No:SRR1946092,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS77194,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.6806</longitude>
+				<latitude>56.1633</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.6806,56.1633,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9471</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Ull-A-1,   Country:SWE,   SRA_No:SRR1946102,   Sequenced by:GMI,   Collector:Alison Anastasio,   CS Number:CS78820,   Admixture Group: south_sweden</description>
+			<LookAt>
+				<longitude>14.0159</longitude>
+				<latitude>56.1099</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.0159,56.1099,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9646</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Aiell-1,   Country:ITA,   SRA_No:SRR1946232,   Sequenced by:Monsanto,   Collector:,   CS Number:CS76648,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.170188</longitude>
+				<latitude>39.126899</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.170188,39.126899,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9647</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Basen-1,   Country:ITA,   SRA_No:SRR1946233,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS76690,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.77</longitude>
+				<latitude>40.37</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.77,40.37,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9648</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Bisig-1,   Country:ITA,   SRA_No:SRR1946234,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS76712,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.28</longitude>
+				<latitude>39.48</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.28,39.48,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9651</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Filet-1,   Country:ITA,   SRA_No:SRR1946236,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS76858,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>14.87</longitude>
+				<latitude>40.68</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.87,40.68,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9653</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Giffo-1,   Country:ITA,   SRA_No:SRR1946237,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS76878,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.13</longitude>
+				<latitude>38.44</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.13,38.44,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9655</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Marce-1,   Country:ITA,   SRA_No:SRR1946238,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS77071,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.47</longitude>
+				<latitude>38.92</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.47,38.92,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9656</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Marti-1,   Country:ITA,   SRA_No:SRR1946239,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS77072,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>17.31</longitude>
+				<latitude>40.64</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>17.31,40.64,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9657</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Melic-1,   Country:ITA,   SRA_No:SRR1946240,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS77078,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.04</longitude>
+				<latitude>38.45</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.04,38.45,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9659</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Pigna-1,   Country:ITA,   SRA_No:SRR1946242,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS77177,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>14.18</longitude>
+				<latitude>41.18</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.18,41.18,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9660</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Sarno-1,   Country:ITA,   SRA_No:SRR1946243,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS77236,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>14.57</longitude>
+				<latitude>40.84</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>14.57,40.84,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9661</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Cimin-1,   Country:ITA,   SRA_No:SRR1946244,   Sequenced by:Monsanto,   Collector:0,   CS Number:CS76771,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.21</longitude>
+				<latitude>39.58</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.21,39.58,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9664</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-1-179,   Country:ITA,   SRA_No:SRR1946246,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS78907,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.2832</longitude>
+				<latitude>46.366</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.2832,46.366,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9665</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-1-180,   Country:ITA,   SRA_No:SRR1946247,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS78908,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.329</longitude>
+				<latitude>46.4117</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.329,46.4117,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9667</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-1-183,   Country:ITA,   SRA_No:SRR1946249,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS78910,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3294</longitude>
+				<latitude>46.4121</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3294,46.4121,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9669</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-2-185,   Country:ITA,   SRA_No:SRR1946251,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77086,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3301</longitude>
+				<latitude>46.4131</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3301,46.41310000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9670</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-2-186,   Country:ITA,   SRA_No:SRR1946252,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77087,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3303</longitude>
+				<latitude>46.4133</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3303,46.4133,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9671</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-3-187,   Country:ITA,   SRA_No:SRR1946253,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77088,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3305</longitude>
+				<latitude>46.4135</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3305,46.4135,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9672</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-3-188,   Country:ITA,   SRA_No:SRR1946254,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77089,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3307</longitude>
+				<latitude>46.4137</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3307,46.4137,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9676</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-4-192,   Country:ITA,   SRA_No:SRR1946256,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77093,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.2866</longitude>
+				<latitude>46.3718</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.2866,46.37180000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9677</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Mitterberg-4-193,   Country:ITA,   SRA_No:SRR1946257,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS77094,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.334</longitude>
+				<latitude>46.4191</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.334,46.41910000000001,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9679</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Castelfed-1-195,   Country:ITA,   SRA_No:SRR1946259,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS76744,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.2928</longitude>
+				<latitude>46.3378</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.2928,46.3378,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9685</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Castelfed-2-201,   Country:ITA,   SRA_No:SRR1946265,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS76750,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3416</longitude>
+				<latitude>46.3865</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3416,46.3865,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9687</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Castelfed-2-203,   Country:ITA,   SRA_No:SRR1946267,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS76752,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.342</longitude>
+				<latitude>46.3869</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.342,46.38689999999999,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9693</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Castelfed-3-209,   Country:ITA,   SRA_No:SRR1946272,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS76758,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.343</longitude>
+				<latitude>46.3879</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.343,46.3879,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9695</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:Castelfed-4-211,   Country:ITA,   SRA_No:SRR1946274,   Sequenced by:Monsanto,   Collector:Joerg Wunder,   CS Number:CS78892,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3434</longitude>
+				<latitude>46.3883</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3434,46.3883,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9962</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE102 / Galdo-1,   Country:ITA,   SRA_No:SRR1946503,   Sequenced by:MPI,   Collector:,   CS Number:CS76423,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>15.32</longitude>
+				<latitude>40.57</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>15.32,40.57,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9963</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE104 / Lago-1,   Country:ITA,   SRA_No:SRR1946504,   Sequenced by:MPI,   Collector:,   CS Number:CS76367,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.26</longitude>
+				<latitude>39.18</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.26,39.18,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9964</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE106 / Mammo-1,   Country:ITA,   SRA_No:SRR1946505,   Sequenced by:MPI,   Collector:,   CS Number:CS76365,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.23</longitude>
+				<latitude>38.36</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.23,38.36,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9965</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE107 / Mammo-2,   Country:ITA,   SRA_No:SRR1946506,   Sequenced by:MPI,   Collector:,   CS Number:CS76364,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.22</longitude>
+				<latitude>38.38</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.22,38.38,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9966</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE111 / Monte-1,   Country:ITA,   SRA_No:SRR1946507,   Sequenced by:MPI,   Collector:,   CS Number:CS76361,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>15.65</longitude>
+				<latitude>40.28</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>15.65,40.28,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9969</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE120 / Valsi-1,   Country:ITA,   SRA_No:SRR1946509,   Sequenced by:MPI,   Collector:,   CS Number:CS76425,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.45</longitude>
+				<latitude>40.18</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.45,40.18,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9970</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE163 / Altenb-2,   Country:ITA,   SRA_No:SRR1946510,   Sequenced by:MPI,   Collector:Joerg Wunder,   CS Number:CS76353,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.2376</longitude>
+				<latitude>46.3716</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.2376,46.3716,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9971</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE169 / Bozen-1.1,   Country:ITA,   SRA_No:SRR1946511,   Sequenced by:MPI,   Collector:Joerg Wunder,   CS Number:CS76357,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.331</longitude>
+				<latitude>46.513</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.331,46.513,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9974</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE212 / Castelfed-4.1,   Country:ITA,   SRA_No:SRR1946514,   Sequenced by:MPI,   Collector:Joerg Wunder,   CS Number:CS76355,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3492</longitude>
+				<latitude>46.3941</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3492,46.3941,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9975</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE213 / Castelfed-4-213,   Country:ITA,   SRA_No:SRR1946515,   Sequenced by:MPI,   Collector:Joerg Wunder,   CS Number:CS76356,   Admixture Group: central_europe</description>
+			<LookAt>
+				<longitude>11.3494</longitude>
+				<latitude>46.3943</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>11.3494,46.3943,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9980</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE91 / Angel-1,   Country:ITA,   SRA_No:SRR1946519,   Sequenced by:MPI,   Collector:,   CS Number:CS76362,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.17</longitude>
+				<latitude>38.62</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.17,38.62,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9981</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE92 / Angit-1,   Country:ITA,   SRA_No:SRR1946520,   Sequenced by:MPI,   Collector:,   CS Number:CS76366,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.24</longitude>
+				<latitude>38.76</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.24,38.76,0</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>9982</name>
+			<Snippet maxLines="0"></Snippet>
+			<description>Accession Name:ICE93 / Apost-1,   Country:ITA,   SRA_No:SRR1946521,   Sequenced by:MPI,   Collector:,   CS Number:CS76368,   Admixture Group: italy_balkan_caucasus</description>
+			<LookAt>
+				<longitude>16.47</longitude>
+				<latitude>39.01</latitude>
+				<altitude>0</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<range>1000</range>
+				<altitudeMode>relativeToGround</altitudeMode>
+			</LookAt>
+			<styleUrl>#0_0</styleUrl>
+			<ExtendedData>
+			</ExtendedData>
+			<Point>
+				<coordinates>16.47,39.01,0</coordinates>
+			</Point>
+		</Placemark>
+
+	</Folder>
+</Document>
+</kml>

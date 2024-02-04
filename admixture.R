@@ -1,25 +1,9 @@
 # Admixture Analysis
 
-library(PopGenome) 
-library(dplyr)
 library(ggplot2)
-library (readr)
-library(tibble)
-library(vcfR)
-library(adegenet)
-library(factoextra)
-library(FactoMineR)
-library(tidyverse)
-library(ggrepel)
-library(gplots)
-library(StAMPP)
-library(RColorBrewer)
-library(stringr)
-library(ggplot2)
-library(dplyr)
 
 #set working directory
-setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/admixture")
+setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
 
 cv <- read.table("cross_validation.txt")
 cv
@@ -37,9 +21,9 @@ colnames(CV) <- c("CV","K")
 # the lowest cross validation error
 # when the cross-validation error decrease the most
 
-graph_title <- "Cross-Validation plot"
-x_title <- "K"
-y_title <- "Cross-validation error"
+graph_title="Cross-Validation plot"
+x_title="K"
+y_title="Cross-validation error"
 graph_1<-ggplot(CV,aes(x=K,y=CV))
 graph_1+geom_line()+scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10))+
   labs(title=graph_title)+
@@ -69,11 +53,11 @@ palette(my_colors)
 source("admixFun.R") 
 
 #list Q files and sort for K
-files <- list.files("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/admixture", full = TRUE, pattern = "Q")
+files <- list.files("C:/Users/aless/OneDrive/Desktop/Projekt/P_Q_files", full = TRUE, pattern = "Q")
 files <- files[order(as.numeric(sub('.*a.thaliana(\\d+)\\.Q$', '\\1', files)))]
 
 #population file
-pop <- scan("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/admixture/pop.txt",what="df",na="")
+pop <- scan("C:/Users/aless/OneDrive/Desktop/Projekt/pop.txt",what="df",na="")
 table(pop) 
 
 # possible K
@@ -84,10 +68,7 @@ allQ <- list()
 for(K in Kall)
   allQ[[K]]<-t(read.table(files[K-min(Kall)+1]))
 
-#exact ordering (slow for large K)
-plotMulti(allQ,Kall=2:3,reorder=1,pop,fast=T,lwd=1,lty=1)
-
 #make smaller line and change type to solid line
 plotMulti(allQ,Kall=2:10,reorder=1,pop,fast=T,lwd=1,lty=1)
 
-plotMulti(allQ,Kall=2:10,reorder=1,pop,fast=T,lwd=0) 
+
