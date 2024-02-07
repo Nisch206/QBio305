@@ -1,7 +1,6 @@
-
 # Load required libraries
 
-library(PopGenome) 
+library(PopGenome)
 library(ggplot2)
 library (readr)
 library(tibble)
@@ -18,11 +17,6 @@ library(dplyr)
 library(VariantAnnotation)
 library(tidyr)
 library(cowplot)
-
-
-# set working directory
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
 
 #Stampp to calculate FST between populations
 # Load VCF file
@@ -79,7 +73,7 @@ heatmap(stamppNeisD_matrix,
         main = "Genetic Divergence (FST) b/w A. thaliana individuals from Sweden & Italy ")
 
 
-# FST calculation between populations 
+# FST calculation between populations
 
 at.VCF <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
 
@@ -87,22 +81,22 @@ at.VCF <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_AC
 #get chromosomes start and end points
 # Read the VCF file
 
-vcf <- readVcf("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz") 
+vcf <- readVcf("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
 # Extract chromosome names
 
-chromosomes <- seqlevels(vcf) 
+chromosomes <- seqlevels(vcf)
 # Initialize an empty data frame to store results
 
-chromosome_ranges <- data.frame(CHROM = character(), Start = numeric(), End = numeric(), stringsAsFactors = FALSE) 
-# Iterate over chromosomes 
-for (chrom in chromosomes) { 
+chromosome_ranges <- data.frame(CHROM = character(), Start = numeric(), End = numeric(), stringsAsFactors = FALSE)
+# Iterate over chromosomes
+for (chrom in chromosomes) {
   # Extract positions for the current chromosome
-  
-  positions <- start(vcf[seqnames(vcf) == chrom]) 
+
+  positions <- start(vcf[seqnames(vcf) == chrom])
   # Append results to the data frame
-  
-  chromosome_ranges <- rbind(chromosome_ranges, data.frame(CHROM = chrom, Start = min(positions), End = max(positions))) 
-} 
+
+  chromosome_ranges <- rbind(chromosome_ranges, data.frame(CHROM = chrom, Start = min(positions), End = max(positions)))
+}
 # Display the results
 
 print(chromosome_ranges)
@@ -117,11 +111,11 @@ At_Chr4 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGT
 At_Chr5 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=1602625, topos=25995710, include.unknown =  TRUE)
 
 #Examining the variant data
-get.sum.data(At_Chr1) 
-get.sum.data(At_Chr2) 
-get.sum.data(At_Chr3) 
-get.sum.data(At_Chr4) 
-get.sum.data(At_Chr5) 
+get.sum.data(At_Chr1)
+get.sum.data(At_Chr2)
+get.sum.data(At_Chr3)
+get.sum.data(At_Chr4)
+get.sum.data(At_Chr5)
 
 #To check total number of sites
 At_Chr1@n.sites # 28629727
@@ -158,7 +152,7 @@ At_Chr5@populations
 # set chromosome size
 chr1 <- 28629727
 chr2 <- 9413286
-chr3 <- 6689002  
+chr3 <- 6689002
 chr4 <- 18059106
 chr5 <- 24393086
 
@@ -169,7 +163,7 @@ window_jump <- 50
 #Chr 1
 # use seq to find the start points of each window
 window_start1 <- seq(from = 1, to = chr1, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop1 <- window_start1 + window_size
 
 # no windows start before the end of chromosome 4
@@ -188,14 +182,14 @@ chr1 - window_stop1[length(window_stop1)]
 # 26
 
 # save as a data.frame
-windows1 <- data.frame(start = window_start1, stop = window_stop1, 
+windows1 <- data.frame(start = window_start1, stop = window_stop1,
                        mid = window_start1 + (window_stop1-window_start1)/2)
 
 
 # chr 2
 # use seq to find the start points of each window
 window_start2 <- seq(from = 1, to = chr2, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop2 <- window_start2 + window_size
 
 # no windows start before the end of chromosome 4
@@ -214,14 +208,14 @@ chr2 - window_stop2[length(window_stop2)]
 # 35
 
 # save as a data.frame
-windows2 <- data.frame(start = window_start2, stop = window_stop2, 
+windows2 <- data.frame(start = window_start2, stop = window_stop2,
                        mid = window_start2 + (window_stop2-window_start2)/2)
 
 
-# chr 3 
+# chr 3
 # use seq to find the start points of each window
 window_start3 <- seq(from = 1, to = chr3, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop3 <- window_start3 + window_size
 
 # no windows start before the end of chromosome 4
@@ -240,14 +234,14 @@ chr3 - window_stop3[length(window_stop3)]
 # 1
 
 # save as a data.frame
-windows3 <- data.frame(start = window_start3, stop = window_stop3, 
+windows3 <- data.frame(start = window_start3, stop = window_stop3,
                        mid = window_start3 + (window_stop3-window_start3)/2)
 
 
-# chr 4 
+# chr 4
 # use seq to find the start points of each window
 window_start4 <- seq(from = 1, to = chr4, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop4 <- window_start4 + window_size
 
 # no windows start before the end of chromosome 4
@@ -266,14 +260,14 @@ chr4 - window_stop4[length(window_stop4)]
 # 5
 
 # save as a data.frame
-windows4 <- data.frame(start = window_start4, stop = window_stop4, 
+windows4 <- data.frame(start = window_start4, stop = window_stop4,
                        mid = window_start4 + (window_stop4-window_start4)/2)
 
 
-# chr 5 
+# chr 5
 # use seq to find the start points of each window
 window_start5 <- seq(from = 1, to = chr5, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop5 <- window_start5 + window_size
 
 # no windows start before the end of chromosome 4
@@ -292,7 +286,7 @@ chr5 - window_stop5[length(window_stop5)]
 # 35
 
 # save as a data.frame
-windows5 <- data.frame(start = window_start5, stop = window_stop5, 
+windows5 <- data.frame(start = window_start5, stop = window_stop5,
                        mid = window_start5 + (window_stop5-window_start5)/2)
 
 
@@ -311,11 +305,11 @@ At_sw4 <- diversity.stats(At_sw4, pi = TRUE)
 At_sw5 <- diversity.stats(At_sw5, pi = TRUE)
 
 # calculate diversity statistics - FST
-At_sw1 <- F_ST.stats(At_sw1, mode = "nucleotide") 
-At_sw2 <- F_ST.stats(At_sw2, mode = "nucleotide") 
-At_sw3 <- F_ST.stats(At_sw3, mode = "nucleotide") 
-At_sw4 <- F_ST.stats(At_sw4, mode = "nucleotide") 
-At_sw5 <- F_ST.stats(At_sw5, mode = "nucleotide") 
+At_sw1 <- F_ST.stats(At_sw1, mode = "nucleotide")
+At_sw2 <- F_ST.stats(At_sw2, mode = "nucleotide")
+At_sw3 <- F_ST.stats(At_sw3, mode = "nucleotide")
+At_sw4 <- F_ST.stats(At_sw4, mode = "nucleotide")
+At_sw5 <- F_ST.stats(At_sw5, mode = "nucleotide")
 
 
 #Extracting statistics for visualization
@@ -331,7 +325,7 @@ nd5 <- At_sw5@nuc.diversity.within/100
 
 # Add the population names to each of estimate
 # make population name vector
-pops <- c("IT","SWE") 
+pops <- c("IT","SWE")
 
 # set population names
 colnames(nd1) <- paste0(pops, "_pi")
@@ -368,7 +362,7 @@ x1 <- sub("/", "_", x1)
 # look at x1 to confirm the replacement has occurred
 x1
 
-# Change the column names of our two data matrices, before we put 
+# Change the column names of our two data matrices, before we put
 #everything together in our final dataset.
 colnames(fst1) <- paste0(x1, "_fst1")
 colnames(dxy1) <- paste0(x1, "_dxy1")
@@ -423,46 +417,46 @@ wilcox_test_result5 <- wilcox.test(log_pi ~ populations, data = pi_g5)
 
 
 # Create the individual boxplot objects
-a1 <- ggplot(pi_g1, aes(populations, log_pi, fill = populations)) + 
+a1 <- ggplot(pi_g1, aes(populations, log_pi, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(pi)") +
   ggtitle("Chromosome 1") +
   annotate("text", x = 1.5, y = max(pi_g1$log_pi), label = paste("p =", format.pval(wilcox_test_result1$p.value, digits = 3)))
 
-a2 <- ggplot(pi_g2, aes(populations, log_pi, fill = populations)) + 
+a2 <- ggplot(pi_g2, aes(populations, log_pi, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(pi)") +
   ggtitle("Chromosome 2") +
   annotate("text", x = 1.5, y = max(pi_g2$log_pi), label = paste("p =", format.pval(wilcox_test_result2$p.value, digits = 3)))
 
-a3 <- ggplot(pi_g3, aes(populations, log_pi, fill = populations)) + 
+a3 <- ggplot(pi_g3, aes(populations, log_pi, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(pi)") +
   ggtitle("Chromosome 3") +
   annotate("text", x = 1.5, y = max(pi_g3$log_pi), label = paste("p =", format.pval(wilcox_test_result3$p.value, digits = 3)))
 
-a4 <- ggplot(pi_g4, aes(populations, log_pi, fill = populations)) + 
+a4 <- ggplot(pi_g4, aes(populations, log_pi, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(pi)") +
   ggtitle("Chromosome 4") +
   annotate("text", x = 1.5, y = max(pi_g4$log_pi), label = paste("p =", format.pval(wilcox_test_result4$p.value, digits = 3)))
 
-a5 <- ggplot(pi_g5, aes(populations, log_pi, fill = populations)) + 
+a5 <- ggplot(pi_g5, aes(populations, log_pi, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(pi)") +
   ggtitle("Chromosome 5") +
@@ -549,7 +543,7 @@ combined_plots_with_title <- plot_grid(
 # Print the combined plot with an overall title
 print(combined_plots_with_title)
 
-#to plot nd, FST and d_XY_ to examine how they co-vary along the genome. 
+#to plot nd, FST and d_XY_ to examine how they co-vary along the genome.
 #This requires a bit of data manipulation, but is relatively straightforward. We will break it down into steps.
 # select data of interest
 hs1 <- At_data1 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst1, IT_SWE_dxy1)
@@ -784,7 +778,7 @@ a_td5 <- ggplot(hs_td_g5, aes(mid / 10^6, log_value, colour = populations)) +  g
   theme_light()
 a_td5
 
-# Boxplots 
+# Boxplots
 
 wilcox_test_result1 <- wilcox.test(log_value ~ populations, data = hs_td_g1 )
 wilcox_test_result2 <- wilcox.test(log_value ~ populations, data = hs_td_g2 )
@@ -794,10 +788,10 @@ wilcox_test_result5 <- wilcox.test(log_value ~ populations, data = hs_td_g5 )
 
 
 # Create the individual boxplot objects
-a1 <- ggplot(hs_td_g1, aes(populations, log_value, fill = populations)) + 
+a1 <- ggplot(hs_td_g1, aes(populations, log_value, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(td)") +
   ggtitle("Chromosome 1") +
@@ -805,10 +799,10 @@ a1 <- ggplot(hs_td_g1, aes(populations, log_value, fill = populations)) +
 a1 <- a1 + expand_limits(y = c(-6, max(hs_td_g1$log_value) + 1))
 
 
-a2 <- ggplot(hs_td_g2, aes(populations, log_value, fill = populations)) + 
+a2 <- ggplot(hs_td_g2, aes(populations, log_value, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(td)") +
   ggtitle("Chromosome 2") +
@@ -816,10 +810,10 @@ a2 <- ggplot(hs_td_g2, aes(populations, log_value, fill = populations)) +
 a2 <- a2 + expand_limits(y = c(-5, max(hs_td_g2$log_value) + 1))
 
 
-a3 <- ggplot(hs_td_g3, aes(populations, log_value, fill = populations)) + 
+a3 <- ggplot(hs_td_g3, aes(populations, log_value, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(td)") +
   ggtitle("Chromosome 3") +
@@ -827,20 +821,20 @@ a3 <- ggplot(hs_td_g3, aes(populations, log_value, fill = populations)) +
 a3 <- a3 + expand_limits(y = c(-3.5, max(hs_td_g3$log_value) + 1))
 
 
-a4 <- ggplot(hs_td_g4, aes(populations, log_value, fill = populations)) + 
+a4 <- ggplot(hs_td_g4, aes(populations, log_value, fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(td)") +
   ggtitle("Chromosome 4") +
   annotate("text", x = 2, y = -4.5, label = paste("p =", format.pval(wilcox_test_result4$p.value, digits = 3)))
 a4 <- a4 + expand_limits(y = c(-5, max(hs_td_g4$log_value) + 1))
 
-a5 <- ggplot(hs_td_g5, aes(populations, log_value,fill = populations)) + 
+a5 <- ggplot(hs_td_g5, aes(populations, log_value,fill = populations)) +
   geom_boxplot(color = "black") +
   scale_fill_manual(values = c("red", "blue")) +
-  theme_light() + 
+  theme_light() +
   xlab(NULL) +
   ylab("Log10(td)") +
   ggtitle("Chromosome 5") +
@@ -868,90 +862,82 @@ print(combined_plots_with_title)
 
 
 
-#  Plotting FST along Chromosome 
-#  Visualizing FST outliers      
+#  Plotting FST along Chromosome
+#  Visualizing FST outliers
 
+# Chr. 1
 head(At_data1)
 
 # Provide summary statistics for the IT_SW_fst column
 summary(At_data1$IT_SWE_fst1)
 
 #Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data1[At_data1$IT_SWE_fst1 != 0, ]
+non_zero_data1 <- At_data1[At_data1$IT_SWE_fst1 != 0, ]
 
 # Plot histogram of non-zero IT_SW_fst values
-ggplot(non_zero_data, aes(x = IT_SWE_fst1)) +
+ggplot(non_zero_data1, aes(x = IT_SWE_fst1)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Filter out zero and negative values
-positive_data <- At_data1[At_data1$IT_SWE_fst1 > 0, ]
+positive_data1 <- At_data1[At_data1$IT_SWE_fst1 > 0, ]
 
 # Display the first few rows of the positive_data
-head(positive_data)
+head(positive_data1)
 
 
 # Plot histogram of positive IT_SW_fst values
-ggplot(positive_data, aes(x = IT_SWE_fst1)) +
+ggplot(positive_data1, aes(x = IT_SWE_fst1)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Set threshold for 95% and 99%
-threshold_95 <- quantile(positive_data$IT_SWE_fst1, 0.95, na.rm = TRUE)
-threshold_99 <- quantile(positive_data$IT_SWE_fst1, 0.99, na.rm = TRUE)
+threshold_95_1 <- quantile(positive_data1$IT_SWE_fst1, 0.95, na.rm = TRUE)
+threshold_99_1 <- quantile(positive_data1$IT_SWE_fst1, 0.99, na.rm = TRUE)
 
 # Plot histogram with threshold marked
-ggplot(positive_data, aes(x = IT_SWE_fst1)) +
+ggplot(positive_data1, aes(x = IT_SWE_fst1)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
-  geom_vline(xintercept = threshold_95, colour = "orange", linetype =  "dashed", size = 1)+
-  geom_vline(xintercept = threshold_99, colour = "red", linetype =  "dashed", size = 1)
+  geom_vline(xintercept = threshold_95_1, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_1, colour = "red", linetype =  "dashed", size = 1)
 
 # Add outlier columns based on thresholds
-positive_data$outlier_95 <- ifelse(positive_data$IT_SWE_fst1 >  threshold_95, "Outlier", "Non-outlier")
-positive_data$outlier_99 <- ifelse(positive_data$IT_SWE_fst1 >  threshold_99, "Outlier", "Non-outlier")
+positive_data1$outlier_95 <- ifelse(positive_data1$IT_SWE_fst1 >  threshold_95_1, "Outlier", "Non-outlier")
+positive_data1$outlier_99 <- ifelse(positive_data1$IT_SWE_fst1 >  threshold_99_1, "Outlier", "Non-outlier")
 
 # Display the first few rows of the updated positive_data
-head(positive_data)
+head(positive_data1)
 
 # Create a FST scatter plot along the chromosome
-a <- ggplot(positive_data, aes(mid, IT_SWE_fst1)) + geom_point()
+a <- ggplot(positive_data1, aes(mid, IT_SWE_fst1)) + geom_point()
 a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
 a <- a + theme_light()
 a
 
 # Estimate mean FST value
-mean_fst_Chr1 <- mean(positive_data$IT_SWE_fst1)
+mean_fst_Chr1 <- mean(positive_data1$IT_SWE_fst1)
 mean_fst_Chr1
 
-# Create a plot with marked outliers, FST mean line, and customized legend
-top <- ggplot(positive_data, aes(mid, IT_SWE_fst1)) +
-  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%", 
-                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),  
-             size = 2) +
-  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
-  geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
-  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
-  theme_light() +
-  ggtitle("Locus Specific Estimate of FST on Chromosome 1") +  
-  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +  
-  theme(plot.title = element_text(hjust = 0.5))  
-
-# print the plot
-print(top)
-
-
 # Filter rows where the 'outlier_95' column has the value "Outlier"
-out_95 <- filter(positive_data, outlier_95 == "Outlier")
+out_95_1 <- filter(positive_data1, outlier_95 == "Outlier")
 
 # Filter rows where the 'outlier_99' column has the value "Outlier"
-out_99 <- filter(positive_data, outlier_99 == "Outlier")
+out_99_1 <- filter(positive_data1, outlier_99 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_1 <- filter(positive_data1, outlier_99 == "Outlier")
 
 # Print the first 20 rows of the 'out_95' data frame
-print(out_95, n = 20)
+print(out_95_1, n = 20)
+
 
 # Print the first 20 rows of the 'out_99' data frame
-print(out_99, n = 20)
+print(out_99_1, n = 20)
+
+# Adding a chromosome column to the data
+out_99_1$chromosome <- 'Chr1'
+out_95_1$chromosome <- 'Chr1'
 
 ###############################
 
@@ -966,87 +952,74 @@ str(At_data2)
 summary(At_data2$IT_SWE_fst2)
 
 # Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
+non_zero_data2 <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
 
 # Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
+non_zero_data2 <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
 
 # Plot histogram of non-zero IT_SW_fst values
-ggplot(non_zero_data, aes(x = IT_SWE_fst2)) +
+ggplot(non_zero_data2, aes(x = IT_SWE_fst2)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Filter out zero and negative values
-positive_data <- At_data2[At_data2$IT_SWE_fst2 > 0, ]
+positive_data2 <- At_data2[At_data2$IT_SWE_fst2 > 0, ]
 
 # Display the first few rows of the positive_data
-head(positive_data)
+head(positive_data2)
 
 # Plot histogram of positive IT_SW_fst values
-ggplot(positive_data, aes(x = IT_SWE_fst2)) +
+ggplot(positive_data2, aes(x = IT_SWE_fst2)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Set threshold for 95% and 99%
-threshold_95 <- quantile(positive_data$IT_SWE_fst2, 0.95, na.rm = TRUE)
-threshold_99 <- quantile(positive_data$IT_SWE_fst2, 0.99, na.rm = TRUE)
+threshold_95_2 <- quantile(positive_data2$IT_SWE_fst2, 0.95, na.rm = TRUE)
+threshold_99_2 <- quantile(positive_data2$IT_SWE_fst2, 0.99, na.rm = TRUE)
 
 # Plot histogram with threshold marked
-ggplot(positive_data, aes(x = IT_SWE_fst2)) +
+ggplot(positive_data2, aes(x = IT_SWE_fst2)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
-  geom_vline(xintercept = threshold_95, colour = "orange", linetype =  "dashed", size = 1)+
-  geom_vline(xintercept = threshold_99, colour = "red", linetype =  "dashed", size = 1)
+  geom_vline(xintercept = threshold_95_2, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_2, colour = "red", linetype =  "dashed", size = 1)
 
 # Add outlier columns based on thresholds
-positive_data$outlier_95 <- ifelse(positive_data$IT_SWE_fst2 >  threshold_95, "Outlier", "Non-outlier")
-positive_data$outlier_99 <- ifelse(positive_data$IT_SWE_fst2 >  threshold_99, "Outlier", "Non-outlier")
+positive_data2$outlier_95 <- ifelse(positive_data2$IT_SWE_fst2 >  threshold_95_2, "Outlier", "Non-outlier")
+positive_data2$outlier_99 <- ifelse(positive_data2$IT_SWE_fst2 >  threshold_99_2, "Outlier", "Non-outlier")
 
 # Display the first few rows of the updated positive_data
-head(positive_data)
+head(positive_data2)
 
 # Create a FST scatter plot along the chromosome
-a <- ggplot(positive_data, aes(mid, IT_SWE_fst2)) + geom_point()
+a <- ggplot(positive_data2, aes(mid, IT_SWE_fst2)) + geom_point()
 a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
 a <- a + theme_light()
 a
 
 # Estimate mean FST value
-mean_fst_Chr2 <- mean(positive_data$IT_SWE_fst2)
+mean_fst_Chr2 <- mean(positive_data2$IT_SWE_fst2)
 mean_fst_Chr2
 
-# Create a plot with marked outliers, FST mean line, and customized legend
-top <- ggplot(positive_data, aes(mid, IT_SWE_fst2)) +
-  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%", 
-                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),  
-             size = 2) +
-  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
-  geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
-  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
-  theme_light() +
-  ggtitle("Locus Specific Estimate of FST on Chromosome 2") +  
-  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +  
-  theme(plot.title = element_text(hjust = 0.5))  
-
-# print the plot
-print(top)
-
 # Filter rows where the 'outlier_95' column has the value "Outlier"
-out_95 <- filter(positive_data, outlier_95 == "Outlier")
+out_95_2 <- filter(positive_data2, outlier_95 == "Outlier")
 
 # Filter rows where the 'outlier_99' column has the value "Outlier"
-out_99 <- filter(positive_data, outlier_99 == "Outlier")
+out_99_2 <- filter(positive_data2, outlier_99 == "Outlier")
 
 # Print the first 20 rows of the 'out_95' data frame
-print(out_95, n = 20)
+print(out_95_2, n = 20)
 
 # Print the first 20 rows of the 'out_99' data frame
-print(out_99, n = 20)
+print(out_99_2, n = 20)
+
+# Adding a chromosome column to the data
+out_99_2$chromosome <- 'Chr2'
+out_95_2$chromosome <- 'Chr2'
 
 ###########################
 
-
-#ch.3
+# Chr.3
 
 # Provide structure information about the dataset
 str(At_data3)
@@ -1054,81 +1027,71 @@ str(At_data3)
 summary(At_data3$IT_SWE_fst3)
 
 # Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data3[At_data3$IT_SWE_fst3 != 0, ]
+non_zero_data3 <- At_data3[At_data3$IT_SWE_fst3 != 0, ]
 
 # Plot histogram of non-zero IT_SW_fst values
-ggplot(non_zero_data, aes(x = IT_SWE_fst3)) +
+ggplot(non_zero_data3, aes(x = IT_SWE_fst3)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Filter out zero and negative values
-positive_data <- At_data3[At_data3$IT_SWE_fst3 > 0, ]
+positive_data3 <- At_data3[At_data3$IT_SWE_fst3 > 0, ]
 
 # Display the first few rows of the positive_data
-head(positive_data)
+head(positive_data3)
 
 # Plot histogram of positive IT_SW_fst values
-ggplot(positive_data, aes(x = IT_SWE_fst3)) +
+ggplot(positive_data3, aes(x = IT_SWE_fst3)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Set threshold for 95% and 99%
-threshold_95 <- quantile(positive_data$IT_SWE_fst3, 0.95, na.rm = TRUE)
-threshold_99 <- quantile(positive_data$IT_SWE_fst3, 0.99, na.rm = TRUE)
+threshold_95_3 <- quantile(positive_data3$IT_SWE_fst3, 0.95, na.rm = TRUE)
+threshold_99_3 <- quantile(positive_data3$IT_SWE_fst3, 0.99, na.rm = TRUE)
 
 # Plot histogram with threshold marked
-ggplot(positive_data, aes(x = IT_SWE_fst3)) +
+ggplot(positive_data3, aes(x = IT_SWE_fst3)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
-  geom_vline(xintercept = threshold_95, colour = "orange", linetype =  "dashed", size = 1)+
-  geom_vline(xintercept = threshold_99, colour = "red", linetype =  "dashed", size = 1)
+  geom_vline(xintercept = threshold_95_3, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_3, colour = "red", linetype =  "dashed", size = 1)
 
 # Add outlier columns based on thresholds
-positive_data$outlier_95 <- ifelse(positive_data$IT_SWE_fst3 >  threshold_95, "Outlier", "Non-outlier")
-positive_data$outlier_99 <- ifelse(positive_data$IT_SWE_fst3 >  threshold_99, "Outlier", "Non-outlier")
+positive_data3$outlier_95 <- ifelse(positive_data3$IT_SWE_fst3 >  threshold_95_3, "Outlier", "Non-outlier")
+positive_data3$outlier_99 <- ifelse(positive_data3$IT_SWE_fst3 >  threshold_99_3, "Outlier", "Non-outlier")
 
 # Display the first few rows of the updated positive_data
-head(positive_data)
+head(positive_data3)
 
 # Create a FST scatter plot along the chromosome
-a <- ggplot(positive_data, aes(mid, IT_SWE_fst3)) + geom_point()
+a <- ggplot(positive_data3, aes(mid, IT_SWE_fst3)) + geom_point()
 a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
 a <- a + theme_light()
 a
 
 # Estimate mean FST value
-mean_fst_Chr3 <- mean(positive_data$IT_SWE_fst3)
+mean_fst_Chr3 <- mean(positive_data3$IT_SWE_fst3)
 mean_fst_Chr3
 
-# Create a plot with marked outliers, FST mean line, and customized legend
-top <- ggplot(positive_data, aes(mid, IT_SWE_fst3)) +
-  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%", 
-                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),  
-             size = 2) +
-  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
-  geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
-  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
-  theme_light() +
-  ggtitle("Locus Specific Estimate of FST on Chromosome 3") +  
-  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +  
-  theme(plot.title = element_text(hjust = 0.5))  
-
-# print the plot
-print(top)
-
 # Filter rows where the 'outlier_95' column has the value "Outlier"
-out_95 <- filter(positive_data, outlier_95 == "Outlier")
+out_95_3 <- filter(positive_data3, outlier_95 == "Outlier")
+
 # Filter rows where the 'outlier_99' column has the value "Outlier"
-out_99 <- filter(positive_data, outlier_99 == "Outlier")
+out_99_3 <- filter(positive_data3, outlier_99 == "Outlier")
+
 # Print the first 20 rows of the 'out_95' data frame
-print(out_95, n = 20)
+print(out_95_3, n = 20)
 
 # Print the first 20 rows of the 'out_99' data frame
-print(out_99, n = 20)
+print(out_99_3, n = 20)
+
+# Adding a chromosome column to the data
+out_99_3$chromosome <- 'Chr3'
+out_95_3$chromosome <- 'Chr3'
 
 ##########################################
 
-#chr.4
+# Chr.4
 
 # Display the first few rows of the dataset
 head(At_data4)
@@ -1140,84 +1103,71 @@ str(At_data4)
 summary(At_data4$IT_SWE_fst4)
 
 # Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data4[At_data4$IT_SWE_fst4 != 0, ]
+non_zero_data4 <- At_data4[At_data4$IT_SWE_fst4 != 0, ]
 
 # Plot histogram of non-zero IT_SW_fst values
-ggplot(non_zero_data, aes(x = IT_SWE_fst4)) +
+ggplot(non_zero_data4, aes(x = IT_SWE_fst4)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Filter out zero and negative values
-positive_data <- At_data4[At_data4$IT_SWE_fst4 > 0, ]
+positive_data4 <- At_data4[At_data4$IT_SWE_fst4 > 0, ]
 
 # Display the first few rows of the positive_data
-head(positive_data)
+head(positive_data4)
 
 # Plot histogram of positive IT_SW_fst values
-ggplot(positive_data, aes(x = IT_SWE_fst4)) +
+ggplot(positive_data4, aes(x = IT_SWE_fst4)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Set threshold for 95% and 99%
-threshold_95 <- quantile(positive_data$IT_SWE_fst4, 0.95, na.rm = TRUE)
-threshold_99 <- quantile(positive_data$IT_SWE_fst4, 0.99, na.rm = TRUE)
+threshold_95_4 <- quantile(positive_data4$IT_SWE_fst4, 0.95, na.rm = TRUE)
+threshold_99_4 <- quantile(positive_data4$IT_SWE_fst4, 0.99, na.rm = TRUE)
 
 # Plot histogram with threshold marked
-ggplot(positive_data, aes(x = IT_SWE_fst4)) +
+ggplot(positive_data4, aes(x = IT_SWE_fst4)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
-  geom_vline(xintercept = threshold_95, colour = "orange", linetype =  "dashed", size = 1)+
-  geom_vline(xintercept = threshold_99, colour = "red", linetype =  "dashed", size = 1)
+  geom_vline(xintercept = threshold_95_4, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_4, colour = "red", linetype =  "dashed", size = 1)
 
 # Add outlier columns based on thresholds
-positive_data$outlier_95 <- ifelse(positive_data$IT_SWE_fst4 >  threshold_95, "Outlier", "Non-outlier")
-positive_data$outlier_99 <- ifelse(positive_data$IT_SWE_fst4 >  threshold_99, "Outlier", "Non-outlier")
+positive_data4$outlier_95 <- ifelse(positive_data4$IT_SWE_fst4 >  threshold_95_4, "Outlier", "Non-outlier")
+positive_data4$outlier_99 <- ifelse(positive_data4$IT_SWE_fst4 >  threshold_99_4, "Outlier", "Non-outlier")
 
 # Display the first few rows of the updated positive_data
-head(positive_data)
+head(positive_data4)
 
 # Create a FST scatter plot along the chromosome
-a <- ggplot(positive_data, aes(mid, IT_SWE_fst4)) + geom_point()
+a <- ggplot(positive_data4, aes(mid, IT_SWE_fst4)) + geom_point()
 a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
 a <- a + theme_light()
 a
 
 # Estimate mean FST value
-mean_fst_Chr4 <- mean(positive_data$IT_SWE_fst4)
+mean_fst_Chr4 <- mean(positive_data4$IT_SWE_fst4)
 mean_fst_Chr4
 
-# Create a plot with marked outliers, FST mean line, and customized legend
-top <- ggplot(positive_data, aes(mid, IT_SWE_fst4)) +
-  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%", 
-                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),  
-             size = 2) +
-  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
-  geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
-  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
-  theme_light() +
-  ggtitle("Locus Specific Estimate of FST on Chromosome 4") +  
-  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +  
-  theme(plot.title = element_text(hjust = 0.5))  
-
-# print the plot
-print(top)
-
 # Filter rows where the 'outlier_95' column has the value "Outlier"
-out_95 <- filter(positive_data, outlier_95 == "Outlier")
+out_95_4 <- filter(positive_data4, outlier_95 == "Outlier")
+
 # Filter rows where the 'outlier_99' column has the value "Outlier"
-out_99 <- filter(positive_data, outlier_99 == "Outlier")
+out_99_4 <- filter(positive_data4, outlier_99 == "Outlier")
+
 # Print the first 20 rows of the 'out_95' data frame
-print(out_95, n = 20)
+print(out_95_4, n = 20)
 
 # Print the first 20 rows of the 'out_99' data frame
-print(out_99, n = 20)
+print(out_99_4, n = 20)
 
-# Display the first few rows of the dataset
-head(At_data5)
+# Adding a chromosome column to the data
+out_99_4$chromosome <- 'Chr4'
+out_95_4$chromosome <- 'Chr4'
 
 #################################
 
-#ch.5
+# Chr.5
 
 # Provide structure information about the dataset
 str(At_data5)
@@ -1225,77 +1175,230 @@ str(At_data5)
 summary(At_data5$IT_SWE_fst5)
 
 # Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
-non_zero_data <- At_data5[At_data5$IT_SWE_fst5 != 0, ]
+non_zero_data5 <- At_data5[At_data5$IT_SWE_fst5 != 0, ]
 
 # Plot histogram of non-zero IT_SW_fst values
-ggplot(non_zero_data, aes(x = IT_SWE_fst5)) +
+ggplot(non_zero_data5, aes(x = IT_SWE_fst5)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Filter out zero and negative values
-positive_data <- At_data5[At_data5$IT_SWE_fst5 > 0, ]
+positive_data5 <- At_data5[At_data5$IT_SWE_fst5 > 0, ]
 
 # Display the first few rows of the positive_data
-head(positive_data)
+head(positive_data5)
 
 # Plot histogram of positive IT_SW_fst values
-ggplot(positive_data, aes(x = IT_SWE_fst5)) +
+ggplot(positive_data5, aes(x = IT_SWE_fst5)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
 
 # Set threshold for 95% and 99%
-threshold_95 <- quantile(positive_data$IT_SWE_fst5, 0.95, na.rm = TRUE)
-threshold_99 <- quantile(positive_data$IT_SWE_fst5, 0.99, na.rm = TRUE)
+threshold_95_5 <- quantile(positive_data5$IT_SWE_fst5, 0.95, na.rm = TRUE)
+threshold_99_5 <- quantile(positive_data5$IT_SWE_fst5, 0.99, na.rm = TRUE)
 
 # Plot histogram with threshold marked
-ggplot(positive_data, aes(x = IT_SWE_fst5)) +
+ggplot(positive_data5, aes(x = IT_SWE_fst5)) +
   geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
   labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
-  geom_vline(xintercept = threshold_95, colour = "orange", linetype =  "dashed", size = 1)+
-  geom_vline(xintercept = threshold_99, colour = "red", linetype =  "dashed", size = 1)
+  geom_vline(xintercept = threshold_95_5, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_5, colour = "red", linetype =  "dashed", size = 1)
 
 # Add outlier columns based on thresholds
-positive_data$outlier_95 <- ifelse(positive_data$IT_SWE_fst5 >  threshold_95, "Outlier", "Non-outlier")
-positive_data$outlier_99 <- ifelse(positive_data$IT_SWE_fst5 >  threshold_99, "Outlier", "Non-outlier")
+positive_data5$outlier_95 <- ifelse(positive_data5$IT_SWE_fst5 >  threshold_95_5, "Outlier", "Non-outlier")
+positive_data5$outlier_99 <- ifelse(positive_data5$IT_SWE_fst5 >  threshold_99_5, "Outlier", "Non-outlier")
 
 # Display the first few rows of the updated positive_data
-head(positive_data)
+head(positive_data5)
 
 # Create a FST scatter plot along the chromosome
-a <- ggplot(positive_data, aes(mid, IT_SWE_fst5)) + geom_point()
+a <- ggplot(positive_data5, aes(mid, IT_SWE_fst5)) + geom_point()
 a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
 a <- a + theme_light()
 a
 
 # Estimate mean FST value
-mean_fst_Chr5 <- mean(positive_data$IT_SWE_fst5)
+mean_fst_Chr5 <- mean(positive_data5$IT_SWE_fst5)
 mean_fst_Chr5
 
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_5 <- filter(positive_data5, outlier_95 == "Outlier")
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_5 <- filter(positive_data5, outlier_99 == "Outlier")
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_5, n = 20)
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_5, n = 20)
+
+# Adding a chromosome column to the "out_99" data
+out_99_5$chromosome <- 'Chr5'
+out_95_5$chromosome <- 'Chr5'
+
+
+## All scatterplots
 # Create a plot with marked outliers, FST mean line, and customized legend
-top <- ggplot(positive_data, aes(mid, IT_SWE_fst5)) +
-  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%", 
-                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),  
-             size = 2) +
+
+top1 <- ggplot(positive_data1, aes(mid/10^6, IT_SWE_fst1)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
   scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
   geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
   xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
   theme_light() +
-  ggtitle("Locus Specific Estimate of FST on Chromosome 5") +  
-  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +  
-  theme(plot.title = element_text(hjust = 0.5))  
+  ggtitle("Chromosome 1") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
-# print the plot
-print(top)
+top2 <- ggplot(positive_data2, aes(mid/10^6, IT_SWE_fst2)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr2, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 2") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
-# Filter rows where the 'outlier_95' column has the value "Outlier"
-out_95 <- filter(positive_data, outlier_95 == "Outlier")
-# Filter rows where the 'outlier_99' column has the value "Outlier"
-out_99 <- filter(positive_data, outlier_99 == "Outlier")
-# Print the first 20 rows of the 'out_95' data frame
-print(out_95, n = 20)
+top3 <- ggplot(positive_data3, aes(mid/10^6, IT_SWE_fst3)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr3, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 3") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
-# Print the first 20 rows of the 'out_99' data frame
-print(out_99, n = 20)
+top4 <- ggplot(positive_data4, aes(mid/10^6, IT_SWE_fst4)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr4, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 4") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+top5 <- ggplot(positive_data5, aes(mid/10^6, IT_SWE_fst5)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr5, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 5") +
+  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Extract the legend
+legend <- get_legend(top5)
+
+# Remove the legend from plot5 to prevent skewing
+top5 <- top5 + theme(legend.position = "none")
+
+# Combine the individual scatter plots into a single plot
+combined_plots <- plot_grid(top1, top2, top3, top4, top5, legend, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Variation of FST between Italian and Swedish populations along chromosomes", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+###### Asignment to Genes ##########
+library(GenomicRanges)
+
+# Reference genome file
+gff <-read.delim("/Users/julia/Desktop/3. Semester/QGenetics/GFF_final_with_annotation_2.gff", header = FALSE)
+
+# Add column names
+colnames(gff) <- c("model_name", "chromosome", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+# Remove first row that is without data
+gff <- gff[-1,]
+
+# Transform the data type of the start and end positions into numeric data
+gff$start <- as.numeric(as.character(gff$start))
+gff$end <- as.numeric(as.character(gff$end))
+
+# Filter to exclude UTR, intron, and exon types
+filtered_annotations <- subset(gff, !(type %in% c("UTR", "intron", "exon", "five_prime_UTR", "three_prime_UTR", "chromosome")))
+
+# Preperation of outlier data
+# 95% outlier
+# Equalize all column names
+colnames(out_95_1)[6] <- "IT_SWE_fst"
+colnames(out_95_1)[7] <- "IT_SWE_dxy"
+
+colnames(out_95_2) <- colnames(out_95_1)
+colnames(out_95_3) <- colnames(out_95_1)
+colnames(out_95_4) <- colnames(out_95_1)
+colnames(out_95_5) <- colnames(out_95_1)
+
+# Combine them into one data frame
+all_outs_95 <- rbind(out_95_1, out_95_2, out_95_3, out_95_4, out_95_5)
+# Remove rows with 99% outliers, since we look at them afterwards
+all_outs_95 <- all_outs_95[all_outs_95$outlier_99 != "Outlier", ]
+
+# 99% outlier
+# Equalize all column names
+colnames(out_99_1)[6] <- "IT_SWE_fst"
+colnames(out_99_1)[7] <- "IT_SWE_dxy"
+
+colnames(out_99_2) <- colnames(out_99_1)
+colnames(out_99_3) <- colnames(out_99_1)
+colnames(out_99_4) <- colnames(out_99_1)
+colnames(out_99_5) <- colnames(out_99_1)
+
+# Combine them into one data frame
+all_outs <- rbind(out_99_1, out_99_2, out_99_3, out_99_4, out_99_5)
+
+# Search for overlaps
+# Create a GRanges object for the annotation file
+gene_ranges <- GRanges(
+  seqnames = filtered_annotation$chromosome,
+  ranges = IRanges(start = filtered_annotation$start, end = filtered_annotation$end)
+)
+
+
+# Create a GRanges object for the outlier regions
+# For 95% outliers
+outlier_ranges_95 <- GRanges(
+  seqnames = all_outs_95$chromosome,
+  ranges = IRanges(start = all_outs_95$start, end = all_outs_95$stop)
+)
+
+# For 99% outliers
+outlier_ranges <- GRanges(
+  seqnames = all_outs$chromosome,
+  ranges = IRanges(start = all_outs$start, end = all_outs$stop)
+)
+
+# Find overlapps of the data files
+overlaps_95 <- findOverlaps(outlier_ranges_95, gene_ranges, type = "any", select = "all", ignore.strand = TRUE)
+overlaps <- findOverlaps(outlier_ranges, gene_ranges, type = "any", select = "all", ignore.strand = TRUE)
+
+# Extract indices of overlapping genes
+overlapping_genes_indices_95 <- subjectHits(overlaps_95)
+overlapping_genes_indices <- subjectHits(overlaps)
+
+# Extract information for overlapping genes
+overlapping_genes_95 <- filtered_annotation[overlapping_genes_indices_95, ]
+overlapping_genes <- filtered_annotation[overlapping_genes_indices, ]
 
 
 

@@ -2,8 +2,6 @@
 
 library(ggplot2)
 
-#set working directory
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
 
 cv <- read.table("cross_validation.txt")
 cv

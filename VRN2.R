@@ -11,9 +11,6 @@ library(ggplot2)
 library(tidyr)
 library(dunn.test)
 
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
-
 VRN2 <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="4", frompos=9476069, topos=9479878,include.unknown = TRUE)
 
 population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")

@@ -11,7 +11,6 @@ library(ggplot2)
 library(tidyr)
 library(dunn.test)
 
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
 
 # Read the VCF file
 

@@ -11,8 +11,6 @@ library(ggplot2)
 library(tidyr)
 library(dunn.test)
 
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
 # Read the VCF file
 
 FLC <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="5", frompos=3173497, topos=3179448,include.unknown = TRUE)

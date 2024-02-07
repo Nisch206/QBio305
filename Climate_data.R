@@ -3,9 +3,6 @@ library(raster)
 library(geodata)
 library(terra)
 
-# set directory
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
 # Load your sample info 
 samples = read.table("coordinates_project.txt", header = T)
 head(samples)

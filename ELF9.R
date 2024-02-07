@@ -1,7 +1,7 @@
 
 # Load required libraries
 
-library(PopGenome) 
+library(PopGenome)
 library(vcfR)
 library(VariantAnnotation)
 library (readr)
@@ -11,8 +11,6 @@ library(ggplot2)
 library(tidyr)
 library(dunn.test)
 
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
 
 ELF9 <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="5", frompos=5311207, topos= 5315767,include.unknown = TRUE)
 
@@ -21,7 +19,7 @@ population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
 # now get the data for the populations
 populations <- split(population_info$sample, population_info$pop)
 
-# now set 
+# now set
 ELF9 <- set.populations(ELF9, populations, diploid = T)
 ##check if it worked
 ELF9@populations
@@ -38,7 +36,7 @@ window_jump <- 50
 
 # use seq to find the start points of each window
 window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
-# add the size of the window to each start point 
+# add the size of the window to each start point
 window_stop_Chr <- window_start_Chr + window_size
 
 # no windows start before the end of chromosome 4
@@ -53,7 +51,7 @@ window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
 chr - window_stop_Chr[length(window_stop_Chr)]
 
 # save as a data.frame
-windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr, 
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
                           mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
 
 # make a sliding window dataset
@@ -88,7 +86,7 @@ fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
 # extract dxy - pairwise absolute nucleotide diversity
 dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
 
-# get column names 
+# get column names
 x <- colnames(fst_Chr)
 fst_Chr
 # Loop through each population and replace the corresponding population name in the column names
@@ -105,7 +103,7 @@ x <- sub("/", "_", x)
 # look at x to confirm the replacement has occurred
 x
 
-#Make clear these names are for either FST or d_XY_. 
+#Make clear these names are for either FST or d_XY_.
 paste0(x, "_fst")
 paste0(x, "_dxy")
 
@@ -139,18 +137,18 @@ pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "popu
 
 pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
 
-a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) + 
-  geom_boxplot(color = "black") +  
-  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +  
-  theme_light() + 
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
   xlab(NULL) +
   ggtitle("Nucleotide Diversity of ELF9 gene") +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16), 
-        legend.text = element_text(size = 14),  
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
         legend.title = element_text(size = 16)) +
   ylab("Log10(pi)") +
   theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14)) 
+        axis.title = element_text(size = 14))
 
 a_pi_Chr
 
@@ -204,7 +202,7 @@ print(kruskal_pi_dist)
 
 if (kruskal_pi_dist$p.value < 0.05) {
   dunn_result <- dunn.test(pi_data)
-  
+
   # Print the post-hoc Dunn's test results
   print(dunn_result)
 }
@@ -221,15 +219,15 @@ legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
        col=c("red", "orange", "blue", "lightblue"), lty=1,
        title="Population")
 # Add legend for Kruskal-Wallis test p-value
-legend("top", 
-       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)), 
-       bty="n", 
+legend("top",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
        cex=1)
 
-legend("top", 
-       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)), 
-       bty="n", 
-       cex=1,  
-       y.intersp = 3, 
+legend("top",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
        yjust = 1.0)
 

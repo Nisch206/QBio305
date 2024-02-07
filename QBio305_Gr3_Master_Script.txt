@@ -1,0 +1,5495 @@
+### This Script contains all scripts we wrote for this Project. ###
+### When running this script, please execute individual sections, instead of running the entire file ###
+
+### Climate_data.R ###
+library(sp)
+library(raster)
+library(geodata)
+library(terra)
+
+# Load your sample info "coordinates.txt" a tab separated text file with four columns (sample pop lat lon)
+# "coordinates.txt" this file is created for sample project, create a tab separated text file consisting of
+# four columns (sample pop lat lon) for set of samples you are using for using project
+# order of samples should be the same as in your project VCF file.
+samples = read.table("coordinates_project.txt", header = T)
+head(samples)
+lon<-samples$lon
+lat<-samples$lat
+
+# Extract coordinate data
+xy <- samples[, c("lon", "lat")]
+str(xy)
+# Load BioClim data. The following command checks if the data is present at the
+# specified path. If the data is not present, it will be downloaded. Don't Forget to change the path to a folder where you stored your climate data
+biodata = worldclim_global(var = "bio", res = 10, "C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/climate_data_project")
+biodata # inspect the data
+
+# Names of all bioclim variables
+## BIO1 = Annual Mean Temperature, BIO2 = Mean Diurnal Range (Mean of monthly (max temp - min temp))
+## BIO3 = Isothermality (BIO2/BIO7) (??100), BIO4 = Temperature Seasonality (standard deviation ??100)
+## BIO5 = Max Temperature of Warmest Month, BIO6 = Min Temperature of Coldest Month
+## BIO7 = Temperature Annual Range (BIO5-BIO6), BIO8 = Mean Temperature of Wettest Quarter
+## BIO9 = Mean Temperature of Driest Quarter, BIO10 = Mean Temperature of Warmest Quarter
+## BIO11 = Mean Temperature of Coldest Quarter, BIO12 = Annual Precipitation ####################################################
+## BIO13 = Precipitation of Wettest Month, BIO14 = Precipitation of Driest Month
+## BIO15 = Precipitation Seasonality (Coefficient of Variation), BIO16 = Precipitation of Wettest Quarter
+## BIO17 = Precipitation of Driest Quarter, BIO18 = Precipitation of Warmest Quarter
+## BIO19 = Precipitation of Coldest Quarter
+
+#plot a particular bioclim variable from the list
+plot(biodata[[11]], main = "Mean Temperature of Coldest Quarter")
+# plot multiple variables
+plot(biodata[[1:2]])
+
+# Specify the layer you want to plot (replace 1 with the index of the layer you want to plot)
+layer_index <- 11
+# Extract the layer data
+layer_data <- biodata[[layer_index]]
+# Plot the layer
+plot(layer_data, col = terrain.colors(255), main = paste("Mean Temperature of Coldest Quarter", layer_index))
+
+# Extract Biolclimatic varaibles using xy coordinates dataframe
+biodata_extract = extract(biodata[[1:19]], xy, df = T)
+summary(biodata_extract)
+
+#Attach it to the original df
+samples_bio = cbind(samples, biodata_extract)
+
+plot(samples_bio$wc2.1_10m_bio_1)
+# Extract required Climatic variable, for example we need
+bio1<-samples_bio$wc2.1_10m_bio_1
+# Write bio13 data as a text file
+write.table(bio1, file = "bio11_v2.txt", row.names = FALSE, col.names = FALSE)
+
+### Bash Script ###
+
+### VCF file analysis
+
+mkdir project
+cd /home/group.kurse/qbcbp014/project
+module load bcftools/1.18
+
+#List samples accessions
+bcftools query -l group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz
+
+#Count accessions
+bcftools query -l group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz  | wc -l
+
+# List of positions
+bcftools query -f '%POS\n' group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz | head -n 10
+
+# List of positions and alleles
+bcftools query -f '%CHROM %POS %REF %ALT\n' group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz | head -n 10
+
+
+
+
+### Plink
+
+# Download and Install Plink
+cd /home/group.kurse/qbcbp014/tools/
+mkdir plink
+wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20201019.zip
+
+# unzip to contents to plink directory
+unzip plink_linux_x86_64_20201019.zip -d plink
+
+echo 'export PATH="/home/group.kurse/qbcbp014/tools/plink:$PATH"' >>/home/group.kurse/qbcbp014/.bashrc
+
+source /home/group.kurse/qbcbp014/.bashrc
+plink
+
+### Admixture
+
+# Download and install Admixture
+git clone https://github.com/NovembreLab/admixture.git
+
+echo 'export PATH="/home/group.kurse/qbcbp014/tools/admixture/releases/admixture_linux-1.3.0/:$PATH"' >>/home/group.kurse/qbcbp014/.bashrc
+
+source /home/group.kurse/qbcbp014/.bashrc
+admixture
+
+
+
+# Go back to home directory
+cd /home/group.kurse/qbcbp014/
+
+# Create in the directory “project” at “/home/group.kurse/qbcbp014/” the following subdirectories: plink, admixture, stacks, vcftools
+
+mkdir -p project/{plink,admixture,stacks,vcftools}
+
+
+# pca
+
+
+VCF="/home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz"
+
+# perform linkage pruning - i.e. identify prune sites
+plink --vcf $VCF --double-id --allow-extra-chr \
+--set-missing-var-ids @:# \
+--indep-pairwise 50 10 0.1 --out a_thaliana
+
+# prune and create pca
+plink --vcf $VCF --double-id --allow-extra-chr --set-missing-var-ids @:# \
+--extract a_thaliana.prune.in \
+--make-bed --pca --out /home/group.kurse/qbcbp014/project/plink/a_thaliana
+
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.nosex /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.log /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.fam /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenvec /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.eigenval /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.bim /home/group.kurse/qbcbp014/project/admixture
+cp /home/group.kurse/qbcbp014/project/plink/a_thaliana.bed /home/group.kurse/qbcbp014/project/admixture
+
+cd /home/group.kurse/qbcbp014/project/admixture
+
+# Generate the input file in plink format
+FILE=a_thaliana
+
+plink --double-id --vcf /home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz --make-bed --out $FILE --allow-extra-chr
+
+
+################################### theory
+#### Use plink to run LD pruning -> create prune.in and prune.out files for pca and .fam. .bim . bam files for GEA
+#### RUN PCA with PLINK
+
+$ plink --vcf /home/group.kurse/qbcbp014/project/1001genomes_snp-short-indel
+_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing_80SwEs_DefenseOnly.vcf.gz
+ --indep-pairwise 50 10 0.1 --allow-extra-chr --out sample_project_plink_ldprune
+
+# This generates "sample_project_plink_ldprune.prune.in" & "sample_project_plink_ldprune.prune.out":
+# the former includes variants below the LD threshold for retention, while the latter includes variants
+# above the LD threshold. "--indep-pairwise 50 10 0.1" is linkage pruning in 50kb window, with window step
+# size of 10, r squared threshold is set to 0.1, pruning any variables with r squared greater than 0.1
+
+### Perform PCA using Plink
+$ plink --vcf /home/group.kurse/qbcbp014/project/1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing_80SwEs_DefenseOnly.vcf.gz --extract sample_project_plink_ldprune.prune.in --make-bed --pca --out sample_project_plink
+
+# This generates "sample_project_plink.eigenval" and "sample_project_plink.eigenvec" for PCA analysis.
+# Use option "--make-bed" for additional files needed for ADMIXTURE,  The binary files "sample_project_plink.bed" &
+# "sample_project_plink.bim," and "sample_project_plink.fam" are produced, which will be utilized in GWAS.
+
+###########################################
+
+# ADMIXTURE does not accept chromosome names that are not human chromosomes. We will thus just exchange the first column by 0
+awk '{$1="0";print $0}' $FILE.bim > $FILE.bim.tmp
+mv $FILE.bim.tmp $FILE.bim
+
+#Run ADMIXTURE. We will run it with cross-validation (the default is 5-fold CV, for higher, choose e.g. cv=10) and K=2.
+
+admixture --cv $FILE.bed 2 > log2.out
+
+
+#Let’s now run it in a for loop with K=2 to K=10 and direct the output into log files
+
+for i in {1..10}
+do
+ admixture --cv $FILE.bed $i > log${i}.out
+done
+
+
+###
+#To identify the best value of k clusters which is the value with lowest cross-validation error, we need to collect the cv errors.
+#Below are three different ways to extract the number of K and the CV error for each corresponding K.
+#Like we said at the start of the course, there are many ways to achieve the same thing in bioinformatics!
+###
+
+FILE=a.thaliana
+awk '/CV/ {print $3,$4}' *out | cut -c 4,7-20 > $FILE.cv.error
+cat a.thaliana.cv.error
+
+
+
+#Find the optimal number of clusters
+Collect the cross validation information obtained from the all the log files.
+
+grep -h CV log*.out>cross_validation.txt
+
+1: 0.19178
+1 0.17293
+2 0.15986
+3 0.15546 #
+4 0.15697
+5 0.16731
+6 0.17408
+7 0.18058
+8 0.18052
+9 0.19249
+
+
+# It seems cluster 3 is the best!
+
+cross_validation file
+
+
+CV error (K=10): 0.19178
+CV error (K=1): 0.17293
+CV error (K=2): 0.15986
+CV error (K=3): 0.15546
+CV error (K=4): 0.15697
+CV error (K=5): 0.16731
+CV error (K=6): 0.17408
+CV error (K=7): 0.18058
+CV error (K=8): 0.18052
+CV error (K=9): 0.19249
+
+
+### GWAS
+
+cd /home/group.kurse/qbcbp014/project/gwas
+
+module load miniconda
+conda create -n gemma
+conda activate gemma
+conda install -c bioconda gemma
+
+
+cp /home/group.kurse/qbcbp014/project/group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz /home/group.kurse/qbcbp014/project/gwas
+
+plink --vcf group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz --make-bed --out /home/group.kurse/qbcbp014/project/admixture/prefix_of_plink_bfiles
+
+gemma --bfile prefix_of_plink_bfiles -p bio19.txt -n 1 -k /home/group.kurse/qbcbp014/project/gwas/output/my_kinship_output.cXX.txt -lmm 4 -o gwas_project_result -miss 0.9 -r2 1 -hwe 0 -maf 0.05
+
+### PCA_project.R ###
+
+# Principle Component Analysis (PCA)
+
+# load all required packages
+library(ggplot2)
+library(vcfR)
+library(adegenet)
+library(factoextra)
+library(FactoMineR)
+library(plotly)
+library(tibble)
+library(cowplot)
+
+vcf_file <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+# Convert VCF to genind object
+genind_vcf <- vcfR2genind(vcf_file)
+
+
+# Scale genind object for PCA
+genind_vcf_scaled = scaleGen(genind_vcf, NA.method = "mean")
+
+# Perform PCA
+pca <- dudi.pca(genind_vcf_scaled, cent = TRUE, scale = FALSE, scannf = FALSE, nf = 10)
+
+# Check PCA dimensions
+axis_all = pca$eig * 100 / sum(pca$eig)
+barplot(axis_all[1:10], main = "PCA eigenvalues")
+
+str(pca)
+summary(pca)
+
+pca_axis <- pca$li
+pca_eigenval <- pca$eig[1:10]
+str(pca_axis)
+
+# set names
+ind_names<- read.table("group_3_accession_names.txt", header= FALSE)
+str(ind_names)
+
+# Add a new column "ind" to pca_axis using the values from ind
+pca_axis$ind <- ind_names$V1
+
+# You can also directly provide a list of names
+population_labels <- c("SWE-S", "SWE-S", "SWE-N", "SWE-N", "SWE-N", "SWE-N", "SWE-S", "SWE-N", "SWE-N", "SWE-S",
+                       "SWE-S", "SWE-S", "SWE-S", "SWE-S", "SWE-N", "SWE-N", "SWE-N", "SWE-N", "SWE-N", "SWE-S",
+                       "SWE-N", "SWE-S", "SWE-N", "IT-N", "IT-N", "SWE-S", "SWE-S", "SWE-N", "SWE-S", "SWE-S",
+                       "SWE-N", "SWE-N", "SWE-N", "SWE-N", "SWE-S", "SWE-S", "SWE-S", "SWE-S", "SWE-N", "SWE-N",
+                       "SWE-S", "SWE-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S",
+                       "IT-S", "IT-S", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N", "IT-N",
+                       "IT-N", "IT-N", "IT-N", "IT-N", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-S", "IT-N",
+                       "IT-N", "IT-N", "IT-N", "IT-S", "IT-S", "IT-S")
+
+# Add a new column named "Population" to your data frame
+pca_axis$Population <- population_labels
+
+pop<-pca_axis$Population
+
+# remake data.frame
+pca_2 <- as.tibble(data.frame(pca_axis, population_labels))
+
+n <- length(pca_eigenval)
+n
+
+# first convert to percentage variance explained
+pve <- data.frame(PC = 1:10, pve = pca_eigenval/sum(pca_eigenval)*100)
+
+# make plot
+a <- ggplot(pve, aes(PC, pve)) + geom_bar(stat = "identity")
+a + ylab("Percentage variance explained") + theme_light()
+
+# calculate the cumulative sum of the percentage variance explained
+cumsum(pve$pve)
+
+str(pca_2)
+
+# plot pca PC1 and PC2
+b <- ggplot(pca_2, aes(Axis1, Axis2, col = pop)) +
+  geom_point(size = 6) +  #
+  scale_colour_manual(values = c("red", "orange", "blue", "lightblue")) +
+  coord_equal() +
+  theme_light() +
+  xlab(paste0("PC1 (", signif(pve$pve[1], 3), "%)")) +
+  ylab(paste0("PC2 (", signif(pve$pve[2], 3), "%)")) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        plot.margin = margin(20, 20, 20, 20))
+
+# Print the plot
+print(b)
+
+
+# plot pca PC1 and PC3
+c <- ggplot(pca_2, aes(Axis1, Axis3, col = pop)) +
+  geom_point(size = 6) +
+  scale_colour_manual(values = c("red", "orange", "blue", "lightblue")) +
+  coord_equal() +
+  theme_light() +
+  xlab(paste0("PC1 (", signif(pve$pve[1], 3), "%)")) +
+  ylab(paste0("PC3 (", signif(pve$pve[3], 3), "%)")) +
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        plot.margin = margin(20, 20, 20, 20))
+
+# Print the plot
+print(b)
+
+
+combined_plots <- plot_grid(b,c, labels = "AUTO", nrow = 1)
+
+overall_title <- ggdraw() +
+  draw_label(" PCA of Arabidopsis thaliana Accessions from Italy (IT) and Sweden (SWE)", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+#3D plot
+
+fig <- plot_ly(pca_2, x = ~Axis1, y = ~Axis2, z = ~Axis3, color =pop, colors = c("red", "orange", "blue", "lightblue")) %>%
+  add_markers(size = 12)
+
+fig <- fig %>%
+  layout(
+    title = "Arabidopsis thaliana Accessions from Italy (ITA) and Sweden(SWE)",
+    scene = list(bgcolor = "white")
+  )
+
+fig
+
+### admixFun.R ###
+
+
+getRMSD<-function(Qest,Qtrue){
+    require(gtools)
+
+  npop<-nrow(Qtrue)
+  perms<-permutations(npop,npop)
+  Nperm<-dim(perms)[1]
+
+  theMin<-c()
+  for(g in 1:nrow(Qest)){
+    cat("N perm",Nperm,"\n")
+    RMSEs<-rep(0,Nperm)
+    Qnew<-Qest[-g,]
+    for(i in 1:Nperm){
+      RMSEs[i]<-sqrt(sum((Qtrue-Qnew[perms[i,],])^2))
+    }
+    theMin[g]<-min(RMSEs)
+  }
+
+  w<-which.min(theMin)
+  Qnew<-Qest[-w,]
+
+  RMSEs<-rep(0,Nperm)
+  for(i in 1:Nperm){
+    RMSEs[i]<-sqrt(sum((Qtrue-Qnew[perms[i,],])^2))
+  }
+ #print(RMSEs)
+  Qnew<-rbind(Qnew[perms[which.min(RMSEs),],],Qest[w,])
+  Qnew
+}
+
+## returns the Q matrix with minimum difference to the old Q(that has 1 less population)
+getFast<-function(Q,Qold){
+    npop<-nrow(Qold)
+    res<-c()
+    for(g in 1:nrow(Q)){
+        w<-rowSums((rep(Q[g,],each=npop)-Qold)^2)
+        res<-rbind(res,c(which.min(w),min(w)))
+    }
+    dub <- duplicated(res[,1])
+    dd<-res[dub,1]
+    ww<-which.max(res[res[,1]==dd,2])
+    res[which(res[,1]==dd)[ww],1]<-npop+1
+    Q[order(res[,1]),]
+}
+
+
+colorFun<-function(x,Q){
+  o<-Q[,x]
+  if(length(x)==1)
+     o<-matrix(o,ncol=1)
+
+  K<-nrow(o)
+  res<-matrix(0,ncol=ncol(o),nrow=K^2)
+  most<-order(rowSums(o),decreasing=T)
+  o<-o[,order(o[most[1],],decreasing=T)]
+  if(length(x)==1)
+    o<-matrix(o,ncol=1)
+
+  for(k in 1:K)
+  res[ (k-1)*K+most[k],]<-o[most[k],]
+  res
+}
+####
+
+
+mkOrd<-function(p,res,popOrd){
+  x<-res[,popOrd==p]
+  if(is.matrix(x)){
+  w<-which.max(rowSums(x))
+  m<-(1:length(popOrd))[popOrd==p][1]-1
+  order(x[w,])+m
+  }else{
+  m<-(1:length(popOrd))[popOrd==p][1]-1
+  c(1)+m
+  }
+}
+
+
+
+
+
+
+
+plotMulti<-function(allQ,Kall,pop,reorder=1,fast=FALSE,lwd=2,lty=2){
+
+      n<-length(pop)
+
+     if(reorder==1){
+        res<-allQ[[length(allQ)]]
+        ord<-order(pop)
+        res <-res[,ord]
+        popOrd<-pop[ord]
+        u <-unlist(lapply(unique(pop), mkOrd,res=res,popOrd=popOrd))
+        ordd <- ord[u]
+    }else
+        ordd <- order(pop)
+
+    pop<-pop[ordd]
+    Qold<-NA
+
+    par(mfrow=c(length(Kall)+1,1))
+cat("K=")
+    for(K in Kall){
+        par(mar=c(.1,5.1,.6,2.1))
+
+        cat(K," ")
+        Q<-allQ[[K]]
+        Q<-Q[,ordd]
+        if(K!=Kall[1]){
+            if(fast)
+                Q<-getFast(Q,Qold)
+            else
+                Q<-getRMSD(Q,Qold)
+
+        }
+        Qold<-Q
+
+        Q<-do.call(cbind,tapply(1:length(pop),match(pop,unique(pop)),colorFun,Q=Q))
+
+
+
+        ta<-tapply(pop,pop,length)
+        small<- names(ta)[ta==1]
+        h<- barplot(Q,border=NA,col=1:K,space=0,ylab="Admixture
+proportion",main=paste("K = ",K,sep=""))
+        abline(v=tapply(h,pop,max)+0.5,col="black",lwd=lwd,lty=lty)
+
+        med<-tapply(h,pop,median)
+
+
+
+    }
+    par(mar=c(2.9,5.1,.1,2.1))
+h<- barplot(Q,border=NA,col="transparent",space=0, axes=F)
+    text(med,rep(0.5,length(unique(pop))),names(med),xpd=TRUE,srt = 45,cex=1.2,adj=1)
+
+
+}
+
+### admixture.R ###
+# Admixture Analysis
+
+library(ggplot2)
+
+cv <- read.table("cross_validation.txt")
+cv
+# Analyze the cross-validation results Then, add a K-cluster column indicating the number of K you test and select only two columns of interest, CV and K.
+
+cv$K <-gsub("[\\(\\)]", "", regmatches(cv$V3, gregexpr("\\(.*?\\)", cv$V3)))
+CV <- cv[, c("V4", "K")]
+CV
+CV$K <- as.numeric(sub("K=", "", CV$K))
+
+# Rename your two columns CV and K-cluster
+colnames(CV) <- c("CV","K")
+
+# Do a graph showing the cross validation results. Then select the optimal number of clusters regarding :
+# the lowest cross validation error
+# when the cross-validation error decrease the most
+
+graph_title="Cross-Validation plot"
+x_title="K"
+y_title="Cross-validation error"
+graph_1<-ggplot(CV,aes(x=K,y=CV))
+graph_1+geom_line()+scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10))+
+  labs(title=graph_title)+
+  labs(x=x_title)+
+  labs(y=y_title)+
+  theme(axis.text.x=element_text(colour="black"))+
+  theme(legend.title=element_blank())+
+  theme(axis.text.y=element_text(colour="black",size=12))+
+  theme(axis.text.x=element_text(colour="black",size=12))+
+  theme(panel.border = element_rect(colour="black", fill=NA, size=3),
+        axis.title=element_text(size=18,colour="black",family="Helvetica",face="bold"))
+
+#Save the graph
+ggsave("Admixture_cross-validation.pdf",width=7,height=5,dpi=600)
+dev.off()
+
+# One can modify the color palette to include the colors yellow2, blue, orange, and red2 and its shades
+# using the palette function and the colors parameter. You can define a custom palette
+# with these colors. Here's how you can do it:
+# Define a custom color palette
+my_colors <- c("red", "orange", "blue", "lightblue")
+
+# Set the custom palette
+palette(my_colors)
+
+#load admxiture function
+source("admixFun.R")
+
+#list Q files and sort for K
+files <- list.files("C:/Users/aless/OneDrive/Desktop/Projekt/P_Q_files", full = TRUE, pattern = "Q")
+files <- files[order(as.numeric(sub('.*a.thaliana(\\d+)\\.Q$', '\\1', files)))]
+
+#population file
+pop <- scan("C:/Users/aless/OneDrive/Desktop/Projekt/pop.txt",what="df",na="")
+table(pop)
+
+# possible K
+Kall <- 1:10
+
+## read Qs
+allQ <- list()
+for(K in Kall)
+  allQ[[K]]<-t(read.table(files[K-min(Kall)+1]))
+
+#make smaller line and change type to solid line
+plotMulti(allQ,Kall=2:10,reorder=1,pop,fast=T,lwd=1,lty=1)
+
+### Fst_tajima_nd.R ###
+# Load required libraries
+
+library(PopGenome)
+library(ggplot2)
+library (readr)
+library(tibble)
+library(vcfR)
+library(adegenet)
+library(factoextra)
+library(FactoMineR)
+library(tidyverse)
+library(ggrepel)
+library(gplots)
+library(StAMPP)
+library(RColorBrewer)
+library(dplyr)
+library(VariantAnnotation)
+library(tidyr)
+library(cowplot)
+
+
+#Stampp to calculate FST between populations
+# Load VCF file
+vcf_file <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+# Convert VCF to genlight object
+genlight_vcf <- vcfR2genlight(vcf_file)
+
+# Read population information from file
+pop <- read.table("sample_pop_it_swe.txt", header = TRUE)
+str(pop)
+
+# Extract population data
+pop1 <- pop$pop
+pop2 = as.factor(pop1)
+genlight_vcf$pop = pop2
+
+# Convert genlight to stampp object
+stampp_vcf = stamppConvert(genlight_vcf, type = "genlight")
+
+# Calculate FST between populations
+stamppFst = stamppFst(stampp_vcf, nboots = 100, percent = 95, nclusters = 8)
+stamppFst_matrix = as.matrix(stamppFst$Fsts)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppFst_matrix) <- 0
+stamppFst_matrix[upper.tri(stamppFst_matrix)]  <- t(stamppFst_matrix)[upper.tri(stamppFst_matrix)]
+# Optional: order the names
+stamppFst_matrix = stamppFst_matrix[order(row.names(stamppFst_matrix)), order(colnames(stamppFst_matrix))]
+
+# Make an FST heatmap
+heatmap(stamppFst_matrix,
+        symm = TRUE,
+        margins = c(10, 10),
+        main = "Genetic Divergence (FST) b/w A. thaliana Pop from Sweden & Italy ")
+
+
+#calculate genetic distance between individuals - nei's
+
+stamppNeisD = stamppNeisD(stampp_vcf, pop = FALSE)
+stamppNeisD_matrix = as.matrix(stamppNeisD)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppNeisD_matrix) <- 0
+stamppNeisD_matrix[upper.tri(stamppNeisD_matrix)]  <- t(stamppNeisD_matrix)[upper.tri(stamppNeisD_matrix)]
+heatmap(stamppNeisD_matrix)
+
+# add row names
+colnames(stamppNeisD_matrix) <- rownames(stamppNeisD_matrix)
+
+# Create a heatmap with symmetric color scale
+heatmap(stamppNeisD_matrix,
+        symm = TRUE,
+        main = "Genetic Divergence (FST) b/w A. thaliana individuals from Sweden & Italy ")
+
+
+# FST calculation between populations
+
+at.VCF <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+
+#get chromosomes start and end points
+# Read the VCF file
+
+vcf <- readVcf("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+# Extract chromosome names
+
+chromosomes <- seqlevels(vcf)
+# Initialize an empty data frame to store results
+
+chromosome_ranges <- data.frame(CHROM = character(), Start = numeric(), End = numeric(), stringsAsFactors = FALSE)
+# Iterate over chromosomes
+for (chrom in chromosomes) {
+  # Extract positions for the current chromosome
+
+  positions <- start(vcf[seqnames(vcf) == chrom])
+  # Append results to the data frame
+
+  chromosome_ranges <- rbind(chromosome_ranges, data.frame(CHROM = chrom, Start = min(positions), End = max(positions)))
+}
+# Display the results
+
+print(chromosome_ranges)
+
+
+# Estimate and plot Fst and Tajima'D and Neutrality stats using PopGenome
+
+At_Chr1 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="1", frompos=1373683, topos=30003409, include.unknown =  TRUE)
+At_Chr2 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="2", frompos=2332947, topos=11746232, include.unknown =  TRUE)
+At_Chr3 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="3", frompos=14093721, topos=20782721, include.unknown =  TRUE)
+At_Chr4 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="4", frompos=269237, topos=18328342, include.unknown =  TRUE)
+At_Chr5 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=1602625, topos=25995710, include.unknown =  TRUE)
+
+#Examining the variant data
+get.sum.data(At_Chr1)
+get.sum.data(At_Chr2)
+get.sum.data(At_Chr3)
+get.sum.data(At_Chr4)
+get.sum.data(At_Chr5)
+
+#To check total number of sites
+At_Chr1@n.sites # 28629727
+At_Chr2@n.sites # 9413286
+At_Chr3@n.sites # 6689001
+At_Chr4@n.sites # 18059106
+At_Chr5@n.sites # 24393086
+
+##Deine populations in your dataset
+
+population_info <- read_delim("sample_pop_it_swe.txt", delim = "\t")
+
+# Get the data for the populations
+populations1 <- split(population_info$sample, population_info$pop)
+populations1
+
+At_Chr1 <- set.populations(At_Chr1, populations1, diploid = T)
+At_Chr1@populations
+
+At_Chr2 <- set.populations(At_Chr2, populations1, diploid = T)
+At_Chr2@populations
+
+At_Chr3 <- set.populations(At_Chr3, populations1, diploid = T)
+At_Chr3@populations
+
+At_Chr4 <- set.populations(At_Chr4, populations1, diploid = T)
+At_Chr4@populations
+
+At_Chr5 <- set.populations(At_Chr5, populations1, diploid = T)
+At_Chr5@populations
+
+#Setting up sliding windows
+
+# set chromosome size
+chr1 <- 28629727
+chr2 <- 9413286
+chr3 <- 6689002
+chr4 <- 18059106
+chr5 <- 24393086
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+#Chr 1
+# use seq to find the start points of each window
+window_start1 <- seq(from = 1, to = chr1, by = window_jump)
+# add the size of the window to each start point
+window_stop1 <- window_start1 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start1 > chr1)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop1 > chr1)
+# 2
+
+# remove windows from the start and stop vectors
+window_start1 <- window_start1[which(window_stop1 < chr1)]
+window_stop1 <- window_stop1[which(window_stop1 < chr1)]
+
+chr1 - window_stop1[length(window_stop1)]
+# 26
+
+# save as a data.frame
+windows1 <- data.frame(start = window_start1, stop = window_stop1,
+                       mid = window_start1 + (window_stop1-window_start1)/2)
+
+
+# chr 2
+# use seq to find the start points of each window
+window_start2 <- seq(from = 1, to = chr2, by = window_jump)
+# add the size of the window to each start point
+window_stop2 <- window_start2 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start2 > chr2)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop2 > chr2)
+# 2
+
+# remove windows from the start and stop vectors
+window_start2 <- window_start2[which(window_stop2 < chr2)]
+window_stop2 <- window_stop2[which(window_stop2 < chr2)]
+
+chr2 - window_stop2[length(window_stop2)]
+# 35
+
+# save as a data.frame
+windows2 <- data.frame(start = window_start2, stop = window_stop2,
+                       mid = window_start2 + (window_stop2-window_start2)/2)
+
+
+# chr 3
+# use seq to find the start points of each window
+window_start3 <- seq(from = 1, to = chr3, by = window_jump)
+# add the size of the window to each start point
+window_stop3 <- window_start3 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start3 > chr3)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop3 > chr3)
+# 2
+
+# remove windows from the start and stop vectors
+window_start3 <- window_start3[which(window_stop3 < chr3)]
+window_stop3 <- window_stop3[which(window_stop3 < chr3)]
+
+chr3 - window_stop3[length(window_stop3)]
+# 1
+
+# save as a data.frame
+windows3 <- data.frame(start = window_start3, stop = window_stop3,
+                       mid = window_start3 + (window_stop3-window_start3)/2)
+
+
+# chr 4
+# use seq to find the start points of each window
+window_start4 <- seq(from = 1, to = chr4, by = window_jump)
+# add the size of the window to each start point
+window_stop4 <- window_start4 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start4 > chr4)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop4 > chr4)
+# 2
+
+# remove windows from the start and stop vectors
+window_start4 <- window_start4[which(window_stop4 < chr4)]
+window_stop4 <- window_stop4[which(window_stop4 < chr4)]
+
+chr4 - window_stop4[length(window_stop4)]
+# 5
+
+# save as a data.frame
+windows4 <- data.frame(start = window_start4, stop = window_stop4,
+                       mid = window_start4 + (window_stop4-window_start4)/2)
+
+
+# chr 5
+# use seq to find the start points of each window
+window_start5 <- seq(from = 1, to = chr5, by = window_jump)
+# add the size of the window to each start point
+window_stop5 <- window_start5 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start5 > chr5)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop5 > chr5)
+# 2
+
+# remove windows from the start and stop vectors
+window_start5 <- window_start5[which(window_stop5 < chr5)]
+window_stop5 <- window_stop5[which(window_stop5 < chr5)]
+
+chr5 - window_stop5[length(window_stop5)]
+# 35
+
+# save as a data.frame
+windows5 <- data.frame(start = window_start5, stop = window_stop5,
+                       mid = window_start5 + (window_stop5-window_start5)/2)
+
+
+# make a sliding window dataset
+At_sw1 <- sliding.window.transform(At_Chr1, width = 100, jump = 50, type = 2)
+At_sw2 <- sliding.window.transform(At_Chr2, width = 100, jump = 50, type = 2)
+At_sw3 <- sliding.window.transform(At_Chr3, width = 100, jump = 50, type = 2)
+At_sw4 <- sliding.window.transform(At_Chr4, width = 100, jump = 50, type = 2)
+At_sw5 <- sliding.window.transform(At_Chr5, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics - nd
+At_sw1 <- diversity.stats(At_sw1, pi = TRUE)
+At_sw2 <- diversity.stats(At_sw2, pi = TRUE)
+At_sw3 <- diversity.stats(At_sw3, pi = TRUE)
+At_sw4 <- diversity.stats(At_sw4, pi = TRUE)
+At_sw5 <- diversity.stats(At_sw5, pi = TRUE)
+
+# calculate diversity statistics - FST
+At_sw1 <- F_ST.stats(At_sw1, mode = "nucleotide")
+At_sw2 <- F_ST.stats(At_sw2, mode = "nucleotide")
+At_sw3 <- F_ST.stats(At_sw3, mode = "nucleotide")
+At_sw4 <- F_ST.stats(At_sw4, mode = "nucleotide")
+At_sw5 <- F_ST.stats(At_sw5, mode = "nucleotide")
+
+
+#Extracting statistics for visualization
+
+# get the nucleotide diversity data.
+# extract nucleotide diversity and correct for window size
+nd1 <- At_sw1@nuc.diversity.within/100
+nd2 <- At_sw2@nuc.diversity.within/100
+nd3 <- At_sw3@nuc.diversity.within/100
+nd4 <- At_sw4@nuc.diversity.within/100
+nd5 <- At_sw5@nuc.diversity.within/100
+
+
+# Add the population names to each of estimate
+# make population name vector
+pops <- c("IT","SWE")
+
+# set population names
+colnames(nd1) <- paste0(pops, "_pi")
+colnames(nd2) <- paste0(pops, "_pi")
+colnames(nd3) <- paste0(pops, "_pi")
+colnames(nd4) <- paste0(pops, "_pi")
+colnames(nd5) <- paste0(pops, "_pi")
+
+# extract fst values
+fst1 <- t(At_sw1@nuc.F_ST.pairwise)
+fst2 <- t(At_sw2@nuc.F_ST.pairwise)
+fst3 <- t(At_sw3@nuc.F_ST.pairwise)
+fst4 <- t(At_sw4@nuc.F_ST.pairwise)
+fst5 <- t(At_sw5@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy1 <- get.diversity(At_sw1, between = T)[[2]]/100
+dxy2 <- get.diversity(At_sw2, between = T)[[2]]/100
+dxy3 <- get.diversity(At_sw3, between = T)[[2]]/100
+dxy4 <- get.diversity(At_sw4, between = T)[[2]]/100
+dxy5 <- get.diversity(At_sw5, between = T)[[2]]/100
+
+
+#As with nucleotide diversity, we also corrected d_XY_ for the window size.
+
+# get column names
+x1 <- colnames(fst1)
+# does the same thing as above but by indexing the pops vector
+x1 <- sub("pop1", pops[1], x1)
+x1 <- sub("pop2", pops[2], x1)
+
+# replace forward slash
+x1 <- sub("/", "_", x1)
+# look at x1 to confirm the replacement has occurred
+x1
+
+# Change the column names of our two data matrices, before we put
+#everything together in our final dataset.
+colnames(fst1) <- paste0(x1, "_fst1")
+colnames(dxy1) <- paste0(x1, "_dxy1")
+
+colnames(fst2) <- paste0(x1, "_fst2")
+colnames(dxy2) <- paste0(x1, "_dxy2")
+
+colnames(fst3) <- paste0(x1, "_fst3")
+colnames(dxy3) <- paste0(x1, "_dxy3")
+
+colnames(fst4) <- paste0(x1, "_fst4")
+colnames(dxy4) <- paste0(x1, "_dxy4")
+
+colnames(fst5) <- paste0(x1, "_fst5")
+colnames(dxy5) <- paste0(x1, "_dxy5")
+
+# Combine nd, FST and d_XY_ datasets with our windows information from earlier into a big dataset.
+
+At_data1 <- as_tibble(data.frame(windows1, nd1, fst1, dxy1))
+At_data2 <- as_tibble(data.frame(windows2, nd2, fst2, dxy2))
+At_data3 <- as_tibble(data.frame(windows3, nd3, fst3, dxy3))
+At_data4 <- as_tibble(data.frame(windows4, nd4, fst4, dxy4))
+At_data5 <- as_tibble(data.frame(windows5, nd5, fst5, dxy5))
+
+#Visualizing the data - distributions
+
+# select nucleotide diversity data and calculate means
+dplyr::select(At_data1, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data2, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data3, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data4, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data5, contains("pi")) %>% dplyr::summarise_all(mean)
+
+# To plot this we need to use "gather" on the data
+pi_g1 <- At_data1 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g2 <- At_data2 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g3 <- At_data3 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g4 <- At_data4 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g5 <- At_data5 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+
+pi_g1$log_pi <- log10(pi_g1$pi)
+pi_g2$log_pi <- log10(pi_g2$pi)
+pi_g3$log_pi <- log10(pi_g3$pi)
+pi_g4$log_pi <- log10(pi_g4$pi)
+pi_g5$log_pi <- log10(pi_g5$pi)
+
+wilcox_test_result1 <- wilcox.test(log_pi ~ populations, data = pi_g1)
+wilcox_test_result2 <- wilcox.test(log_pi ~ populations, data = pi_g2)
+wilcox_test_result3 <- wilcox.test(log_pi ~ populations, data = pi_g3)
+wilcox_test_result4 <- wilcox.test(log_pi ~ populations, data = pi_g4)
+wilcox_test_result5 <- wilcox.test(log_pi ~ populations, data = pi_g5)
+
+
+# Create the individual boxplot objects
+a1 <- ggplot(pi_g1, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 1") +
+  annotate("text", x = 1.5, y = max(pi_g1$log_pi), label = paste("p =", format.pval(wilcox_test_result1$p.value, digits = 3)))
+
+a2 <- ggplot(pi_g2, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 2") +
+  annotate("text", x = 1.5, y = max(pi_g2$log_pi), label = paste("p =", format.pval(wilcox_test_result2$p.value, digits = 3)))
+
+a3 <- ggplot(pi_g3, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 3") +
+  annotate("text", x = 1.5, y = max(pi_g3$log_pi), label = paste("p =", format.pval(wilcox_test_result3$p.value, digits = 3)))
+
+a4 <- ggplot(pi_g4, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 4") +
+  annotate("text", x = 1.5, y = max(pi_g4$log_pi), label = paste("p =", format.pval(wilcox_test_result4$p.value, digits = 3)))
+
+a5 <- ggplot(pi_g5, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 5") +
+  annotate("text", x = 1.5, y = max(pi_g5$log_pi), label = paste("p =", format.pval(wilcox_test_result5$p.value, digits = 3)))
+
+# Combine the individual boxplots into a single plot
+combined_plots <- plot_grid(a1, a2, a3, a4, a5, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Nucleotide diversity as a function of sample location", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+#Visualizing patterns along the chromosome
+
+#Let's have a look at how FST between Italian and Swedish populations varies along chromosomes.
+
+# chr 1
+b1 <- ggplot(At_data1, aes(mid/10^6, IT_SWE_fst1)) +
+  geom_line(colour = "red") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 1") +
+  coord_cartesian(xlim = c(0, 10))
+
+# chr 2
+b2 <- ggplot(At_data2, aes(mid/10^6, IT_SWE_fst2)) +
+  geom_line(colour = "orange") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 2")
+
+# chr 3
+b3 <- ggplot(At_data3, aes(mid/10^6, IT_SWE_fst3)) +
+  geom_line(colour = "yellow2") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 3")
+
+# chr 4
+b4 <- ggplot(At_data4, aes(mid/10^6, IT_SWE_fst4)) +
+  geom_line(colour = "green") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 4")
+
+# chr 5
+b5 <- ggplot(At_data5, aes(mid/10^6, IT_SWE_fst5)) +
+  geom_line(colour = "blue") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 5")
+
+combined_plots <- plot_grid(b1, b2, b3, b4, b5, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Variation of FST between Italian and Swedish populations along chromosomes", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+#to plot nd, FST and d_XY_ to examine how they co-vary along the genome.
+#This requires a bit of data manipulation, but is relatively straightforward. We will break it down into steps.
+# select data of interest
+hs1 <- At_data1 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst1, IT_SWE_dxy1)
+hs2 <- At_data2 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst2, IT_SWE_dxy2)
+hs3 <- At_data3 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst3, IT_SWE_dxy3)
+hs4 <- At_data4 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst4, IT_SWE_dxy4)
+hs5 <- At_data5 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst5, IT_SWE_dxy5)
+
+# To set Fst values smaller than zero to zero in the specified columns of a data frame using dplyr and
+# the pipe operator %>%, you can use the mutate function along with across
+
+suppressWarnings({
+  hs1 <- At_data1 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst1, IT_SWE_dxy1) %>%
+    mutate(across(c(IT_SWE_fst1, IT_SWE_dxy1), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs2 <- At_data2 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst2, IT_SWE_dxy2) %>%
+    mutate(across(c(IT_SWE_fst2, IT_SWE_dxy2), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs3 <- At_data3 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst3, IT_SWE_dxy3) %>%
+    mutate(across(c(IT_SWE_fst3, IT_SWE_dxy3), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs4 <- At_data4 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst4, IT_SWE_dxy4) %>%
+    mutate(across(c(IT_SWE_fst4, IT_SWE_dxy4), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs5 <- At_data5 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst5, IT_SWE_dxy5) %>%
+    mutate(across(c(IT_SWE_fst5, IT_SWE_dxy5), ~ ifelse(. < 0, 0, .)))})
+
+
+# use gather to rearrange everything
+hs_g1 <- gather(hs1, -mid, key = "stat", value = "value")
+hs_g2 <- gather(hs2, -mid, key = "stat", value = "value")
+hs_g3 <- gather(hs3, -mid, key = "stat", value = "value")
+hs_g4 <- gather(hs4, -mid, key = "stat", value = "value")
+hs_g5 <- gather(hs5, -mid, key = "stat", value = "value")
+
+
+# To take the logarithm of the value variable in your ggplot code, you can use the log10() function
+# within the aes() mapping.
+hs_g1$log_value <- log10(hs_g1$value)
+hs_g2$log_value <- log10(hs_g2$value)
+hs_g3$log_value <- log10(hs_g3$value)
+hs_g4$log_value <- log10(hs_g4$value)
+hs_g5$log_value <- log10(hs_g5$value)
+
+# rearrange everything so FST came at the top, pi beneath it and then finally, d_XY_
+# first make a factor
+x1 <- factor(hs_g1$stat)
+x2 <- factor(hs_g2$stat)
+x3 <- factor(hs_g3$stat)
+x4 <- factor(hs_g4$stat)
+x5 <- factor(hs_g5$stat)
+
+# then reorder the levels
+x1 <- factor(x1, levels(x1)[c(3, 1, 4, 2)])
+x2 <- factor(x2, levels(x2)[c(3, 1, 4, 2)])
+x3 <- factor(x3, levels(x3)[c(3, 1, 4, 2)])
+x4 <- factor(x4, levels(x4)[c(3, 1, 4, 2)])
+x5 <- factor(x5, levels(x5)[c(3, 1, 4, 2)])
+
+# add to data.frame
+hs_g1$stat <- x1
+hs_g2$stat <- x2
+hs_g3$stat <- x3
+hs_g4$stat <- x4
+hs_g5$stat <- x5
+
+# construct a plot with facets of fst, pi and dxy for each chromosome
+
+a1 <- ggplot(hs_g1, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 1") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a1
+
+a2 <- ggplot(hs_g2, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 2") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a2
+
+a3 <- ggplot(hs_g3, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 3") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a3
+
+a4 <- ggplot(hs_g4, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 4") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a4
+
+a5 <- ggplot(hs_g5, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 5") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a5
+
+
+#### calculate neutrality statistics####
+At_sw1 <- neutrality.stats(At_sw1)
+At_sw2 <- neutrality.stats(At_sw2)
+At_sw3 <- neutrality.stats(At_sw3)
+At_sw4 <- neutrality.stats(At_sw4)
+At_sw5 <- neutrality.stats(At_sw5)
+
+#extract Tajma's D
+td1 <- At_sw1@Tajima.D/100
+td2 <- At_sw2@Tajima.D/100
+td3 <- At_sw3@Tajima.D/100
+td4 <- At_sw4@Tajima.D/100
+td5 <- At_sw5@Tajima.D/100
+
+# set population names
+colnames(td1) <- paste0(pops, "_td")
+colnames(td2) <- paste0(pops, "_td")
+colnames(td3) <- paste0(pops, "_td")
+colnames(td4) <- paste0(pops, "_td")
+colnames(td5) <- paste0(pops, "_td")
+
+#Coerce lists and matrices to data frames
+ara_data1 <- as.tibble(data.frame(windows1, td1,nd1))
+ara_data2 <- as.tibble(data.frame(windows2, td2,nd2))
+ara_data3 <- as.tibble(data.frame(windows3, td3,nd3))
+ara_data4 <- as.tibble(data.frame(windows4, td4,nd4))
+ara_data5 <- as.tibble(data.frame(windows5, td5,nd5))
+
+# TajimaD
+
+# Select data of interest
+hs_td1 <- ara_data1 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td2 <- ara_data2 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td3 <- ara_data3 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td4 <- ara_data4 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td5 <- ara_data5 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+
+# Extract td values for IT and SWE populations
+td_chr1 <- hs_td1 %>%
+  summarize(mean_IT_td = mean(na.omit(IT_td)), mean_SWE_td = mean(na.omit(SWE_td)))
+td_chr1
+
+td_chr2 <- hs_td2 %>%
+  summarize(mean_IT_td = mean(na.omit(IT_td)), mean_SWE_td = mean(na.omit(SWE_td)))
+td_chr2
+
+td_chr3 <- hs_td3 %>%
+  summarize(mean_IT_td = mean(na.omit(IT_td)), mean_SWE_td = mean(na.omit(SWE_td)))
+td_chr3
+
+td_chr4 <- hs_td4 %>%
+  summarize(mean_IT_td = mean(na.omit(IT_td)), mean_SWE_td = mean(na.omit(SWE_td)))
+td_chr4
+
+td_chr5 <- hs_td5 %>%
+  summarize(mean_IT_td = mean(na.omit(IT_td)), mean_SWE_td = mean(na.omit(SWE_td)))
+td_chr5
+
+# Use gather to rearrange everything
+hs_td_g1 <- gather(hs_td1, -mid, key = "populations", value = "value")
+hs_td_g2 <- gather(hs_td2, -mid, key = "populations", value = "value")
+hs_td_g3 <- gather(hs_td3, -mid, key = "populations", value = "value")
+hs_td_g4 <- gather(hs_td4, -mid, key = "populations", value = "value")
+hs_td_g5 <- gather(hs_td5, -mid, key = "populations", value = "value")
+
+# Reorder the levels of the populations factor
+hs_td_g1$populations <- factor(hs_td_g1$populations, levels = c("IT_td", "SWE_td"))
+hs_td_g2$populations <- factor(hs_td_g2$populations, levels = c("IT_td", "SWE_td"))
+hs_td_g3$populations <- factor(hs_td_g3$populations, levels = c("IT_td", "SWE_td"))
+hs_td_g4$populations <- factor(hs_td_g4$populations, levels = c("IT_td", "SWE_td"))
+hs_td_g5$populations <- factor(hs_td_g5$populations, levels = c("IT_td", "SWE_td"))
+
+# Take the logarithm of the value variable
+hs_td_g1$log_value <- log10(hs_td_g1$value)
+hs_td_g2$log_value <- log10(hs_td_g2$value)
+hs_td_g3$log_value <- log10(hs_td_g3$value)
+hs_td_g4$log_value <- log10(hs_td_g4$value)
+hs_td_g5$log_value <- log10(hs_td_g5$value)
+
+# Construct plots with facets
+
+a_td1 <- ggplot(hs_td_g1, aes(mid / 10^6, log_value, colour = populations)) +  geom_line() +
+  facet_wrap(~populations, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td1
+
+a_td2 <- ggplot(hs_td_g2, aes(mid / 10^6, log_value, colour = populations)) +  geom_line() +
+  facet_wrap(~populations, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td2
+
+a_td3 <- ggplot(hs_td_g3, aes(mid / 10^6, log_value, colour = populations)) +  geom_line() +
+  facet_wrap(~populations, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td3
+
+a_td4 <- ggplot(hs_td_g4, aes(mid / 10^6, log_value, colour = populations)) +  geom_line() +
+  facet_wrap(~populations, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td4
+
+a_td5 <- ggplot(hs_td_g5, aes(mid / 10^6, log_value, colour = populations)) +  geom_line() +
+  facet_wrap(~populations, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td5
+
+# Boxplots
+
+wilcox_test_result1 <- wilcox.test(log_value ~ populations, data = hs_td_g1 )
+wilcox_test_result2 <- wilcox.test(log_value ~ populations, data = hs_td_g2 )
+wilcox_test_result3 <- wilcox.test(log_value ~ populations, data = hs_td_g3 )
+wilcox_test_result4 <- wilcox.test(log_value ~ populations, data = hs_td_g4 )
+wilcox_test_result5 <- wilcox.test(log_value ~ populations, data = hs_td_g5 )
+
+
+# Create the individual boxplot objects
+a1 <- ggplot(hs_td_g1, aes(populations, log_value, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(td)") +
+  ggtitle("Chromosome 1") +
+  annotate("text", x = 2, y = -5.4, label = paste("p =", format.pval(wilcox_test_result1$p.value, digits = 3)))
+a1 <- a1 + expand_limits(y = c(-6, max(hs_td_g1$log_value) + 1))
+
+
+a2 <- ggplot(hs_td_g2, aes(populations, log_value, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(td)") +
+  ggtitle("Chromosome 2") +
+  annotate("text", x = 2, y = -4.5, label = paste("p =", format.pval(wilcox_test_result2$p.value, digits = 3)))
+a2 <- a2 + expand_limits(y = c(-5, max(hs_td_g2$log_value) + 1))
+
+
+a3 <- ggplot(hs_td_g3, aes(populations, log_value, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(td)") +
+  ggtitle("Chromosome 3") +
+  annotate("text", x = 2, y = -3.25, label = paste("p =", format.pval(wilcox_test_result3$p.value, digits = 3)))
+a3 <- a3 + expand_limits(y = c(-3.5, max(hs_td_g3$log_value) + 1))
+
+
+a4 <- ggplot(hs_td_g4, aes(populations, log_value, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(td)") +
+  ggtitle("Chromosome 4") +
+  annotate("text", x = 2, y = -4.5, label = paste("p =", format.pval(wilcox_test_result4$p.value, digits = 3)))
+a4 <- a4 + expand_limits(y = c(-5, max(hs_td_g4$log_value) + 1))
+
+a5 <- ggplot(hs_td_g5, aes(populations, log_value,fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(td)") +
+  ggtitle("Chromosome 5") +
+  annotate("text", x = 2, y = -5.5, label = paste("p =", format.pval(wilcox_test_result5$p.value, digits = 3)))
+a5 <- a5 + expand_limits(y = c(-6, max(hs_td_g5$log_value) + 1))
+
+
+# Combine the individual boxplots into a single plot
+combined_plots <- plot_grid(a1, a2, a3, a4, a5, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Tajima's D as a function of sample location", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+
+#  Plotting FST along Chromosome
+#  Visualizing FST outliers
+
+# Chr. 1
+head(At_data1)
+
+# Provide summary statistics for the IT_SW_fst column
+summary(At_data1$IT_SWE_fst1)
+
+#Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data1 <- At_data1[At_data1$IT_SWE_fst1 != 0, ]
+
+# Plot histogram of non-zero IT_SW_fst values
+ggplot(non_zero_data1, aes(x = IT_SWE_fst1)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Filter out zero and negative values
+positive_data1 <- At_data1[At_data1$IT_SWE_fst1 > 0, ]
+
+# Display the first few rows of the positive_data
+head(positive_data1)
+
+
+# Plot histogram of positive IT_SW_fst values
+ggplot(positive_data1, aes(x = IT_SWE_fst1)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Set threshold for 95% and 99%
+threshold_95_1 <- quantile(positive_data1$IT_SWE_fst1, 0.95, na.rm = TRUE)
+threshold_99_1 <- quantile(positive_data1$IT_SWE_fst1, 0.99, na.rm = TRUE)
+
+# Plot histogram with threshold marked
+ggplot(positive_data1, aes(x = IT_SWE_fst1)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
+  geom_vline(xintercept = threshold_95_1, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_1, colour = "red", linetype =  "dashed", size = 1)
+
+# Add outlier columns based on thresholds
+positive_data1$outlier_95 <- ifelse(positive_data1$IT_SWE_fst1 >  threshold_95_1, "Outlier", "Non-outlier")
+positive_data1$outlier_99 <- ifelse(positive_data1$IT_SWE_fst1 >  threshold_99_1, "Outlier", "Non-outlier")
+
+# Display the first few rows of the updated positive_data
+head(positive_data1)
+
+# Create a FST scatter plot along the chromosome
+a <- ggplot(positive_data1, aes(mid, IT_SWE_fst1)) + geom_point()
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a <- a + theme_light()
+a
+
+# Estimate mean FST value
+mean_fst_Chr1 <- mean(positive_data1$IT_SWE_fst1)
+mean_fst_Chr1
+
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_1 <- filter(positive_data1, outlier_95 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_1 <- filter(positive_data1, outlier_99 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_1 <- filter(positive_data1, outlier_99 == "Outlier")
+
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_1, n = 20)
+
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_1, n = 20)
+
+# Adding a chromosome column to the data
+out_99_1$chromosome <- 'Chr1'
+out_95_1$chromosome <- 'Chr1'
+
+###############################
+
+#Chr. 2
+
+head(At_data2)
+
+# Provide structure information about the dataset
+str(At_data2)
+
+# Provide summary statistics for the IT_SW_fst column
+summary(At_data2$IT_SWE_fst2)
+
+# Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data2 <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
+
+# Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data2 <- At_data2[At_data2$IT_SWE_fst2 != 0, ]
+
+# Plot histogram of non-zero IT_SW_fst values
+ggplot(non_zero_data2, aes(x = IT_SWE_fst2)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Filter out zero and negative values
+positive_data2 <- At_data2[At_data2$IT_SWE_fst2 > 0, ]
+
+# Display the first few rows of the positive_data
+head(positive_data2)
+
+# Plot histogram of positive IT_SW_fst values
+ggplot(positive_data2, aes(x = IT_SWE_fst2)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Set threshold for 95% and 99%
+threshold_95_2 <- quantile(positive_data2$IT_SWE_fst2, 0.95, na.rm = TRUE)
+threshold_99_2 <- quantile(positive_data2$IT_SWE_fst2, 0.99, na.rm = TRUE)
+
+# Plot histogram with threshold marked
+ggplot(positive_data2, aes(x = IT_SWE_fst2)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
+  geom_vline(xintercept = threshold_95_2, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_2, colour = "red", linetype =  "dashed", size = 1)
+
+# Add outlier columns based on thresholds
+positive_data2$outlier_95 <- ifelse(positive_data2$IT_SWE_fst2 >  threshold_95_2, "Outlier", "Non-outlier")
+positive_data2$outlier_99 <- ifelse(positive_data2$IT_SWE_fst2 >  threshold_99_2, "Outlier", "Non-outlier")
+
+# Display the first few rows of the updated positive_data
+head(positive_data2)
+
+# Create a FST scatter plot along the chromosome
+a <- ggplot(positive_data2, aes(mid, IT_SWE_fst2)) + geom_point()
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a <- a + theme_light()
+a
+
+# Estimate mean FST value
+mean_fst_Chr2 <- mean(positive_data2$IT_SWE_fst2)
+mean_fst_Chr2
+
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_2 <- filter(positive_data2, outlier_95 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_2 <- filter(positive_data2, outlier_99 == "Outlier")
+
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_2, n = 20)
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_2, n = 20)
+
+# Adding a chromosome column to the data
+out_99_2$chromosome <- 'Chr2'
+out_95_2$chromosome <- 'Chr2'
+
+###########################
+
+# Chr.3
+
+# Provide structure information about the dataset
+str(At_data3)
+
+summary(At_data3$IT_SWE_fst3)
+
+# Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data3 <- At_data3[At_data3$IT_SWE_fst3 != 0, ]
+
+# Plot histogram of non-zero IT_SW_fst values
+ggplot(non_zero_data3, aes(x = IT_SWE_fst3)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Filter out zero and negative values
+positive_data3 <- At_data3[At_data3$IT_SWE_fst3 > 0, ]
+
+# Display the first few rows of the positive_data
+head(positive_data3)
+
+# Plot histogram of positive IT_SW_fst values
+ggplot(positive_data3, aes(x = IT_SWE_fst3)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Set threshold for 95% and 99%
+threshold_95_3 <- quantile(positive_data3$IT_SWE_fst3, 0.95, na.rm = TRUE)
+threshold_99_3 <- quantile(positive_data3$IT_SWE_fst3, 0.99, na.rm = TRUE)
+
+# Plot histogram with threshold marked
+ggplot(positive_data3, aes(x = IT_SWE_fst3)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
+  geom_vline(xintercept = threshold_95_3, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_3, colour = "red", linetype =  "dashed", size = 1)
+
+# Add outlier columns based on thresholds
+positive_data3$outlier_95 <- ifelse(positive_data3$IT_SWE_fst3 >  threshold_95_3, "Outlier", "Non-outlier")
+positive_data3$outlier_99 <- ifelse(positive_data3$IT_SWE_fst3 >  threshold_99_3, "Outlier", "Non-outlier")
+
+# Display the first few rows of the updated positive_data
+head(positive_data3)
+
+# Create a FST scatter plot along the chromosome
+a <- ggplot(positive_data3, aes(mid, IT_SWE_fst3)) + geom_point()
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a <- a + theme_light()
+a
+
+# Estimate mean FST value
+mean_fst_Chr3 <- mean(positive_data3$IT_SWE_fst3)
+mean_fst_Chr3
+
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_3 <- filter(positive_data3, outlier_95 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_3 <- filter(positive_data3, outlier_99 == "Outlier")
+
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_3, n = 20)
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_3, n = 20)
+
+# Adding a chromosome column to the data
+out_99_3$chromosome <- 'Chr3'
+out_95_3$chromosome <- 'Chr3'
+
+##########################################
+
+# Chr.4
+
+# Display the first few rows of the dataset
+head(At_data4)
+
+# Provide structure information about the dataset
+str(At_data4)
+
+# Provide summary statistics for the IT_SW_fst column
+summary(At_data4$IT_SWE_fst4)
+
+# Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data4 <- At_data4[At_data4$IT_SWE_fst4 != 0, ]
+
+# Plot histogram of non-zero IT_SW_fst values
+ggplot(non_zero_data4, aes(x = IT_SWE_fst4)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Filter out zero and negative values
+positive_data4 <- At_data4[At_data4$IT_SWE_fst4 > 0, ]
+
+# Display the first few rows of the positive_data
+head(positive_data4)
+
+# Plot histogram of positive IT_SW_fst values
+ggplot(positive_data4, aes(x = IT_SWE_fst4)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Set threshold for 95% and 99%
+threshold_95_4 <- quantile(positive_data4$IT_SWE_fst4, 0.95, na.rm = TRUE)
+threshold_99_4 <- quantile(positive_data4$IT_SWE_fst4, 0.99, na.rm = TRUE)
+
+# Plot histogram with threshold marked
+ggplot(positive_data4, aes(x = IT_SWE_fst4)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
+  geom_vline(xintercept = threshold_95_4, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_4, colour = "red", linetype =  "dashed", size = 1)
+
+# Add outlier columns based on thresholds
+positive_data4$outlier_95 <- ifelse(positive_data4$IT_SWE_fst4 >  threshold_95_4, "Outlier", "Non-outlier")
+positive_data4$outlier_99 <- ifelse(positive_data4$IT_SWE_fst4 >  threshold_99_4, "Outlier", "Non-outlier")
+
+# Display the first few rows of the updated positive_data
+head(positive_data4)
+
+# Create a FST scatter plot along the chromosome
+a <- ggplot(positive_data4, aes(mid, IT_SWE_fst4)) + geom_point()
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a <- a + theme_light()
+a
+
+# Estimate mean FST value
+mean_fst_Chr4 <- mean(positive_data4$IT_SWE_fst4)
+mean_fst_Chr4
+
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_4 <- filter(positive_data4, outlier_95 == "Outlier")
+
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_4 <- filter(positive_data4, outlier_99 == "Outlier")
+
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_4, n = 20)
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_4, n = 20)
+
+# Adding a chromosome column to the data
+out_99_4$chromosome <- 'Chr4'
+out_95_4$chromosome <- 'Chr4'
+
+#################################
+
+# Chr.5
+
+# Provide structure information about the dataset
+str(At_data5)
+
+summary(At_data5$IT_SWE_fst5)
+
+# Filter out rows where IT_SW_fst is not equal to zero and create a  histogram using the non-zero values.
+non_zero_data5 <- At_data5[At_data5$IT_SWE_fst5 != 0, ]
+
+# Plot histogram of non-zero IT_SW_fst values
+ggplot(non_zero_data5, aes(x = IT_SWE_fst5)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of non-zero IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Filter out zero and negative values
+positive_data5 <- At_data5[At_data5$IT_SWE_fst5 > 0, ]
+
+# Display the first few rows of the positive_data
+head(positive_data5)
+
+# Plot histogram of positive IT_SW_fst values
+ggplot(positive_data5, aes(x = IT_SWE_fst5)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency")
+
+# Set threshold for 95% and 99%
+threshold_95_5 <- quantile(positive_data5$IT_SWE_fst5, 0.95, na.rm = TRUE)
+threshold_99_5 <- quantile(positive_data5$IT_SWE_fst5, 0.99, na.rm = TRUE)
+
+# Plot histogram with threshold marked
+ggplot(positive_data5, aes(x = IT_SWE_fst5)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black",  alpha = 0.7) +
+  labs(title = "Histogram of positive IT_SW_fst", x = "IT_SW_fst", y  = "Frequency") +
+  geom_vline(xintercept = threshold_95_5, colour = "orange", linetype =  "dashed", size = 1)+
+  geom_vline(xintercept = threshold_99_5, colour = "red", linetype =  "dashed", size = 1)
+
+# Add outlier columns based on thresholds
+positive_data5$outlier_95 <- ifelse(positive_data5$IT_SWE_fst5 >  threshold_95_5, "Outlier", "Non-outlier")
+positive_data5$outlier_99 <- ifelse(positive_data5$IT_SWE_fst5 >  threshold_99_5, "Outlier", "Non-outlier")
+
+# Display the first few rows of the updated positive_data
+head(positive_data5)
+
+# Create a FST scatter plot along the chromosome
+a <- ggplot(positive_data5, aes(mid, IT_SWE_fst5)) + geom_point()
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a <- a + theme_light()
+a
+
+# Estimate mean FST value
+mean_fst_Chr5 <- mean(positive_data5$IT_SWE_fst5)
+mean_fst_Chr5
+
+# Filter rows where the 'outlier_95' column has the value "Outlier"
+out_95_5 <- filter(positive_data5, outlier_95 == "Outlier")
+# Filter rows where the 'outlier_99' column has the value "Outlier"
+out_99_5 <- filter(positive_data5, outlier_99 == "Outlier")
+# Print the first 20 rows of the 'out_95' data frame
+print(out_95_5, n = 20)
+
+# Print the first 20 rows of the 'out_99' data frame
+print(out_99_5, n = 20)
+
+# Adding a chromosome column to the "out_99" data
+out_99_5$chromosome <- 'Chr5'
+out_95_5$chromosome <- 'Chr5'
+
+
+## All scatterplots
+# Create a plot with marked outliers, FST mean line, and customized legend
+
+top1 <- ggplot(positive_data1, aes(mid/10^6, IT_SWE_fst1)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr1, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 1") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+top2 <- ggplot(positive_data2, aes(mid/10^6, IT_SWE_fst2)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr2, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 2") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+top3 <- ggplot(positive_data3, aes(mid/10^6, IT_SWE_fst3)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr3, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 3") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+top4 <- ggplot(positive_data4, aes(mid/10^6, IT_SWE_fst4)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr4, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 4") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+top5 <- ggplot(positive_data5, aes(mid/10^6, IT_SWE_fst5)) +
+  geom_point(aes(colour = ifelse(outlier_99 == "Outlier", "Outlier 99%",
+                                 ifelse(outlier_95 == "Outlier", "Outlier 95%", "Non-outlier"))),
+             size = 1.5) +
+  scale_colour_manual(values = c("Non-outlier" = "black", "Outlier 95%" = "orange", "Outlier 99%" = "red")) +
+  geom_hline(yintercept = mean_fst_Chr5, colour = "blue") +
+  xlab("Position on Chromosome (Mb)") + ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 5") +
+  guides(color = guide_legend(override.aes = list(size = 3, shape = 16), title = "Outlier Status")) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Extract the legend
+legend <- get_legend(top5)
+
+# Remove the legend from plot5 to prevent skewing
+top5 <- top5 + theme(legend.position = "none")
+
+# Combine the individual scatter plots into a single plot
+combined_plots <- plot_grid(top1, top2, top3, top4, top5, legend, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Variation of FST between Italian and Swedish populations along chromosomes", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+###### Asignment to Genes ##########
+library(GenomicRanges)
+
+# Reference genome file
+gff <-read.delim("/Users/julia/Desktop/3. Semester/QGenetics/GFF_final_with_annotation_2.gff", header = FALSE)
+
+# Add column names
+colnames(gff) <- c("model_name", "chromosome", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+# Remove first row that is without data
+gff <- gff[-1,]
+
+# Transform the data type of the start and end positions into numeric data
+gff$start <- as.numeric(as.character(gff$start))
+gff$end <- as.numeric(as.character(gff$end))
+
+# Filter to exclude UTR, intron, and exon types
+filtered_annotations <- subset(gff, !(type %in% c("UTR", "intron", "exon", "five_prime_UTR", "three_prime_UTR", "chromosome")))
+
+# Preperation of outlier data
+# 95% outlier
+# Equalize all column names
+colnames(out_95_1)[6] <- "IT_SWE_fst"
+colnames(out_95_1)[7] <- "IT_SWE_dxy"
+
+colnames(out_95_2) <- colnames(out_95_1)
+colnames(out_95_3) <- colnames(out_95_1)
+colnames(out_95_4) <- colnames(out_95_1)
+colnames(out_95_5) <- colnames(out_95_1)
+
+# Combine them into one data frame
+all_outs_95 <- rbind(out_95_1, out_95_2, out_95_3, out_95_4, out_95_5)
+# Remove rows with 99% outliers, since we look at them afterwards
+all_outs_95 <- all_outs_95[all_outs_95$outlier_99 != "Outlier", ]
+
+# 99% outlier
+# Equalize all column names
+colnames(out_99_1)[6] <- "IT_SWE_fst"
+colnames(out_99_1)[7] <- "IT_SWE_dxy"
+
+colnames(out_99_2) <- colnames(out_99_1)
+colnames(out_99_3) <- colnames(out_99_1)
+colnames(out_99_4) <- colnames(out_99_1)
+colnames(out_99_5) <- colnames(out_99_1)
+
+# Combine them into one data frame
+all_outs <- rbind(out_99_1, out_99_2, out_99_3, out_99_4, out_99_5)
+
+# Search for overlaps
+# Create a GRanges object for the annotation file
+gene_ranges <- GRanges(
+  seqnames = filtered_annotation$chromosome,
+  ranges = IRanges(start = filtered_annotation$start, end = filtered_annotation$end)
+)
+
+
+# Create a GRanges object for the outlier regions
+# For 95% outliers
+outlier_ranges_95 <- GRanges(
+  seqnames = all_outs_95$chromosome,
+  ranges = IRanges(start = all_outs_95$start, end = all_outs_95$stop)
+)
+
+# For 99% outliers
+outlier_ranges <- GRanges(
+  seqnames = all_outs$chromosome,
+  ranges = IRanges(start = all_outs$start, end = all_outs$stop)
+)
+
+# Find overlapps of the data files
+overlaps_95 <- findOverlaps(outlier_ranges_95, gene_ranges, type = "any", select = "all", ignore.strand = TRUE)
+overlaps <- findOverlaps(outlier_ranges, gene_ranges, type = "any", select = "all", ignore.strand = TRUE)
+
+# Extract indices of overlapping genes
+overlapping_genes_indices_95 <- subjectHits(overlaps_95)
+overlapping_genes_indices <- subjectHits(overlaps)
+
+# Extract information for overlapping genes
+overlapping_genes_95 <- filtered_annotation[overlapping_genes_indices_95, ]
+overlapping_genes <- filtered_annotation[overlapping_genes_indices, ]
+
+
+### Fst.td.nd_FLC.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(dplyr)
+library(ggplot2)
+library (readr)
+library(tibble)
+library(vcfR)
+library(adegenet)
+library(factoextra)
+library(FactoMineR)
+library(tidyverse)
+library(ggrepel)
+library(gplots)
+library(StAMPP)
+library(RColorBrewer)
+library (readr)
+library(tidyr)
+
+
+At_Chr <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=3173382, topos=3179448, include.unknown =  TRUE)
+
+#To the class of object At_Chr
+class(At_Chr)
+
+At_Chr
+
+#Examining the variant data
+get.sum.data(At_Chr)
+
+At_Chr@n.biallelic.sites + At_Chr@n.polyallelic.sites
+# 22
+
+#To see what slots in Genome class
+show.slots(At_Chr)
+
+#To check total number of sites
+At_Chr@n.sites
+# 6067
+
+#To check starting position and last position of genome class
+At_Chr@region.names
+# "3173382 - 3179448"
+
+##Deine populations in your dataset
+
+population_info <- read_delim("sample_pop_it_swe.txt", delim = "\t")
+
+# Get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+populations
+At_Chr <- set.populations(At_Chr, populations, diploid = T)
+At_Chr@populations
+
+#Setting up sliding windows
+
+# set chromosome size
+chr <- 6067
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop <- window_start + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start > chr)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop > chr)
+# 2
+
+# remove windows from the start and stop vectors
+window_start <- window_start[which(window_stop < chr)]
+window_stop <- window_stop[which(window_stop < chr)]
+
+chr - window_stop[length(window_stop)]
+# 16
+
+# save as a data.frame
+windows <- data.frame(start = window_start, stop = window_stop,
+                      mid = window_start + (window_stop-window_start)/2)
+
+# make a sliding window dataset
+At_sw <- sliding.window.transform(At_Chr, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics - nd
+At_sw <- diversity.stats(At_sw, pi = TRUE)
+
+# calculate diversity statistics - FST
+At_sw <- F_ST.stats(At_sw, mode = "nucleotide")
+#"nucleotide" to specify we want it to be calculated sliding averages
+#of nucleotides, rather than using haplotype data
+
+
+#Extracting statistics for visualization
+
+# get the nucleotide diversity data.
+# extract nucleotide diversity and correct for window size
+nd <- At_sw@nuc.diversity.within/100
+
+#estimates need to be corrected for window size - so we divide them by 100 bp.
+
+# Add the population names to each of estimate
+# make population name vector
+pops <- c("IT","SWE")
+
+# set population names
+colnames(nd) <- paste0(pops, "_pi")
+
+# extract fst values
+fst <- t(At_sw@nuc.F_ST.pairwise)
+# t() to transpose the F_ST matrix so that each column is a pairwise
+#comparison and each row is an estimate for a genome window.
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy <- get.diversity(At_sw, between = T)[[2]]/100
+#As with nucleotide diversity, we also corrected d_XY_ for the window size.
+
+# get column names
+x <- colnames(fst)
+# does the same thing as above but by indexing the pops vector
+x <- sub("pop1", pops[1], x)
+x <- sub("pop2", pops[2], x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+# Change the column names of our two data matrices, before we put
+#everything together in our final dataset.
+colnames(fst) <- paste0(x, "_fst")
+colnames(dxy) <- paste0(x, "_dxy")
+
+# Combine nd, FST and d_XY_ datasets with our windows information from earlier into a big dataset.
+
+At_data <- as_tibble(data.frame(windows, nd, fst, dxy))
+dim(At_data)
+#120      7
+
+
+#####Visualizing the data - distributions#####
+
+#For the purposes of this session, we will focus mainly on the difference between Italian and Swedish
+#Arabidopsis pop.
+#For example, let's say we want to look at mean nucleotide diversity, we can do that like so:
+
+# select nucleotide diversity data and calculate means
+At_data %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+#we used select and contains to select columns from our main dataset that contain
+#pi - i.e. nucleotide diversity columns. We then used summarise_all and mean to calculate
+#the mean value for all of the columns we selected.
+
+# To plot this we need to use "gather" on the data
+
+pi_g <- At_data %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+
+# make a boxplot
+a <- ggplot(pi_g, aes(populations, pi)) + geom_boxplot() + theme_light() + xlab(NULL)
+a
+
+# Taking the logarithm (in this case, log base 10) of the values can be useful when dealing with data
+# that spans several orders of magnitude. This transformation helps in visually emphasizing relative
+# differences in the data, especially when there are large variations in scale.
+
+pi_g$log_pi <- log10(pi_g$pi)
+
+a <- ggplot(pi_g, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +  # Border color
+  scale_fill_manual(values = c("red", "blue")) +  # Box fill colors
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)")
+
+a
+
+#This makes it much clearer how nucleotide diversity differs among the populations.
+
+#When comparing two boxplots to determine if they are statistically different, one can perform
+# statistical tests such as the t-test or Wilcoxon rank-sum test.
+# Wilcoxon rank-sum test
+wilcox_test_result <- wilcox.test(log_pi ~ populations, data = pi_g)
+
+# Print the test result
+print(wilcox_test_result)
+
+# Add p-value to the plot
+a + annotate("text", x = 1.5, y = max(pi_g$log_pi), label = paste("p =", format.pval(wilcox_test_result$p.value, digits = 3)))
+
+#####Visualizing patterns along the chromosome ####
+#Let's have a look at how FST between Italian and Swedish populations varies along chromosomes.
+#We can do this very simply with ggplot.
+
+a <- ggplot(At_data, aes(mid/10^6, IT_SWE_fst)) + geom_line(colour = "red")
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a + theme_light()
+
+
+#to plot nd, FST and d_XY_ to examine how they co-vary along the genome.
+#This requires a bit of data manipulation, but is relatively straightforward. We will break it down into steps.
+# select data of interest
+hs <- At_data %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst, IT_SWE_dxy)
+
+# To set Fst values smaller than zero to zero in the specified columns of a data frame using dplyr and
+# the pipe operator %>%, you can use the mutate function along with across
+
+hs <- At_data %>%
+  dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst, IT_SWE_dxy) %>%
+  mutate(across(c(IT_SWE_fst, IT_SWE_dxy), ~ ifelse(. < 0, 0, .)))
+
+# use gather to rearrange everything
+hs_g <- gather(hs, -mid, key = "stat", value = "value")
+
+#Plot everything together like so:
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + xlab("Position (Mb)")
+a + theme_light()
+
+# To take the logarithm of the value variable in your ggplot code, you can use the log10() function
+# within the aes() mapping.
+hs_g$log_value <- log10(hs_g$value)
+
+a <- ggplot(hs_g, aes(mid/10^6, log_value, colour = stat)) + geom_line()
+a <- a + xlab("Position (Mb)")
+a + theme_light()
+
+# construct a plot with facets
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + facet_grid(stat~., scales = "free_y")
+a <- a + xlab("Position (Mb)")
+a + theme_light() + theme(legend.position = "none")
+
+#The facet_grid function allows us to split our data across panels for quick and easy visualization.
+#In this case, we split our data by the stat variable - we used stat~. to specify we want this done
+#by rows (compare with .~stat for the column equivalent). We also specified that we wanted the scales
+#on our y-axes to vary with scales = free_y.
+
+#However, before we examine our plot in detail, it would also be easier if we rearranged everything
+#so FST came at the top, ?? beneath it and then finally, d_XY_. How can we do that? Well we need to
+#reorder the stat factor in our hs_g dataset.
+# first make a factor
+x <- factor(hs_g$stat)
+# then reorder the levels
+x <- factor(x, levels(x)[c(3, 1, 4, 2)])
+# add to data.frame
+hs_g$stat <- x
+#This looks a little complicated, but in the square brackets above we simply rearranged what order
+#our facets are displayed. We can replot our figure to demonstrate this:
+
+# construct a plot with facets
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + facet_grid(stat~., scales = "free_y")
+a <- a + xlab("Position (Mb)")
+a + theme_light() + theme(legend.position = "none")
+
+
+
+
+
+
+
+
+
+
+
+#### calculate neutrality statistics####
+At_sw <- neutrality.stats(At_sw)
+
+get.neutrality(At_sw)
+
+#Let's look at the first population [[1]].
+get.neutrality(At_sw)[[1]]
+
+#Let's look at the second population [[2]].
+get.neutrality(At_sw)[[2]]
+
+#extract Tajma's D
+td <- At_sw@Tajima.D/100
+
+# set population names
+colnames(td) <- paste0(pops, "_td")
+
+
+###Delimitate windows on chromosome
+
+# set chromosome start and end position
+chri<- 3173382
+chrl <- 3179448
+
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data <- as.tibble(data.frame(windows, td,nd))
+nrow(windows)
+nrow(nd)
+(chrl-chri)/50
+nrow(ara_data)
+head(ara_data)
+ara_data %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+### load selected positions from chromosome e.g., gene 4 5kb upstream and down stream of Defense related genes
+#
+bed<-read.table("At_defense_only.bed")
+head(bed)
+
+colnames(bed)<-c("chr", "begin","end")
+DF<-vector(length=nrow(ara_data))
+length(DF)
+
+#ara_data <- as.tibble(data.frame(windows, nd, DF))###if you only want to look at pi
+ara_data <- as.tibble(data.frame(windows, nd, td, DF))##if you want to look at tajima D and nucleotide diversity
+
+for (i in 2:nrow(bed)){ara_data$DF[which(ara_data$start>bed$begin[i]&ara_data$stop<bed$end[i]) ]<-"DF"}##each window that overlaps a DF is tagged
+ara_data$DF<-as.factor(ara_data$DF)
+summary(ara_data)
+
+####
+# Italy
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$IT_pi[ara_data$DF=="DF"]
+sub2<-ara_data$IT_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not.
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$IT_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$IT_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$IT_td[ara_data$DF=="DF"]
+sub2<-ara_data$IT_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$IT_td), na.rm=T), main="Distribution Tajima D", ylim = c(0, 230))
+lines(density((ara_data$IT_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=IT_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$IT_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = IT_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.03, max(ara_data$IT_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D")
+# Center the title
+p <- p + ggtitle("Distribution Tajima D") +
+  theme(plot.title = element_text(hjust = 0.5)) # Adjust the hjust value for centering
+
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,IT_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)
+
+p<-ggplot(sub2, aes(mid,IT_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)+ theme_bw()
+
+####
+# Sweden
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$SWE_pi[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not.
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$SWE_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$SWE_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$SWE_td[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$SWE_td), na.rm=T), main="Distribution Tajima D")
+lines(density((ara_data$SWE_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=SWE_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+##
+# Base R plot
+plot(density(ara_data$SWE_td, na.rm = TRUE), main = "Distribution Tajima D")
+lines(density(ara_data$SWE_td[ara_data$DF == "DF"], na.rm = TRUE), col = "red")
+
+# ggplot version
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$SWE_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = SWE_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.010, max(ara_data$SWE_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D") + theme_bw()
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,SWE_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+p<-ggplot(sub2, aes(mid,SWE_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+
+
+# FST IT/SWE
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data2 <- as.tibble(data.frame(windows, fst))
+nrow(windows)
+nrow(fst)
+(chrl-chri)/50
+nrow(ara_data2)
+head(ara_data2)
+ara_data2 %>% dplyr::select(contains("fst")) %>% summarise_all(mean)
+
+### load selected positions from chromosome -> flowering time genes ####
+
+bed2<-read.table("At_defense_only.bed")
+head(bed2)
+
+colnames(bed2)<-c("chr", "begin","end")
+DF2<-vector(length=nrow(ara_data2))
+ara_data2 <- as.tibble(data.frame(windows, fst, DF2))
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF22 <- "all"
+} #horrible but works
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF2[which(ara_data2$start>bed2$begin[i]&ara_data2$stop<bed2$end[i])]<-"DF2"
+}
+
+DF2<-vector(length=nrow(ara_data2))
+
+ara_data2$DF2<-as.factor(ara_data2$DF2)
+summary(ara_data2)
+
+
+Defense <- ara_data2 %>% filter(DF2 == "DF2")
+Defense_fst <- Defense %>% filter(IT_SWE_fst >= 0)
+
+a <- ggplot(Defense_fst, aes(mid/10^6, IT_SWE_fst)) + geom_line(colour = "red")
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a + theme_light()
+
+# plot with ara_data FST (<=0 values not removed) and FLOWER_fst (all flowering time FSTs also with <=0 values not removed)
+tip <- ggplot() +
+  geom_line(data=ara_data2, aes(mid/10^6, IT_SWE_fst), colour = "blue") +
+  geom_line(data=Defense, aes(mid/10^6, IT_SWE_fst), colour="pink")
+tip <- tip + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+tip + theme_light()
+
+# remove fst values <=0
+ara_d2 <- ara_data2 %>% filter(IT_SWE_fst >= 0)
+ara_d2
+
+# calculate means
+mean_fst <- mean(ara_d2$IT_SWE_fst)
+mean_defense <- mean(Defense_fst$IT_SWE_fst)
+
+ks.test(ara_d2$IT_SWE_fst, Defense_fst$IT_SWE_fst)
+#p-value: 1
+
+#outliers 95% quantile
+threshold_95 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.975, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_95 = ifelse(Defense_fst$IT_SWE_fst > threshold_95, "outlier", "background"))
+
+#outliers 99% quantile
+threshold_99 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.995, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_99 = ifelse(Defense_fst$IT_SWE_fst > threshold_99, "outlier", "background"))
+
+# plot with ara data and Defense_fst (all fst values below 0 removed)
+top <- ggplot() +
+  geom_point(data=ara_d2, aes(mid/10^6, IT_SWE_fst), colour = "lightblue") +
+  geom_point(data=Defense_fst, aes(mid/10^6, IT_SWE_fst), colour="blue") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_95 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="orange") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_99 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="red") +
+  geom_hline(yintercept = mean_fst) +
+  geom_hline(yintercept = mean_defense, colour="orange")
+
+top <- top + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+top + theme_light()
+
+#################################################################################
+# Draw Density plots
+
+plot(density((ara_d2$IT_SWE_fst), na.rm=T), main="Distribution FST", )
+lines(density((Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"]), na.rm = T), col="red")
+
+p<-ggplot(ara_d2, aes(x=IT_SWE_fst, fill=DF2))
+p+geom_density(alpha=0.4)
+
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_d2$IT_SWE_fst, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.05, max(ara_d2$IT_SWE_fst, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution ESP-SWE FST")
+# plot distribution
+p
+
+# ggplot version with log scale for x-axis
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_log10() +  # Set log scale for x-axis
+  ggtitle("Distribution IT-SWE FST") +
+  theme_bw()
+
+# plot distribution
+p
+
+############################################################
+### To check where these FST outliers are in the genome ####
+###                                                     ####
+############################################################
+
+# Outliers 95% quantile whole genome
+threshold_95 <- quantile(ara_d2$IT_SWE_fst, 0.95, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_95 = ifelse(ara_d2$IT_SWE_fst > threshold_95, "outlier", "background"))
+ara_d2
+
+# Outliers 99% quantile whole genome
+threshold_99 <- quantile(ara_d2$IT_SWE_fst, 0.99, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_99 = ifelse(ara_d2$IT_SWE_fst > threshold_99, "outlier", "background"))
+ara_d2
+
+out <- ara_d2 %>% filter(outlier_95 == "outlier")
+out2 <- out %>% filter(DF2 == "DF2")
+out2 #no 99% outliers but 2 95% outliers which both correspond to sucrose synthase 3
+
+print(out2,n=50)
+
+### Fst.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(dplyr)
+library(ggplot2)
+library (readr)
+library(tibble)
+library(vcfR)
+library(adegenet)
+library(factoextra)
+library(FactoMineR)
+library(tidyverse)
+library(ggrepel)
+library(gplots)
+library(StAMPP)
+library(RColorBrewer)
+
+########################################################################
+##            Stampp to calculate FST between populations             ##
+##                         and individuals                            ##
+########################################################################
+
+# FST calculation between populations
+
+
+# Load required libraries
+library(StAMPP)
+library(adegenet)
+library(RColorBrewer)
+library(vcfR)
+
+# Load VCF file
+vcf_file <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+# Convert VCF to genlight object
+genlight_vcf <- vcfR2genlight(vcf_file)
+
+# Read population information from file
+pop <- read.table("sample_pop_it_swe.txt", header = TRUE)
+str(pop)
+
+# Extract population data
+pop1 <- pop$pop
+pop2 <- as.factor(pop1)
+genlight_vcf$pop <- pop2
+
+# Convert genlight to stampp object
+stampp_vcf <- stamppConvert(genlight_vcf, type = "genlight")
+
+# Calculate FST between populations
+stamppFst <- stamppFst(stampp_vcf, nboots = 100, percent = 95, nclusters = 8)
+stamppFst_matrix <- as.matrix(stamppFst$Fsts)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppFst_matrix) <- 0
+stamppFst_matrix[upper.tri(stamppFst_matrix)]  <- t(stamppFst_matrix)[upper.tri(stamppFst_matrix)]
+# Optional: order the names
+stamppFst_matrix <- stamppFst_matrix[order(row.names(stamppFst_matrix)), order(colnames(stamppFst_matrix))]
+
+# Make an FST heatmap
+heatmap(stamppFst_matrix,
+        symm = TRUE,
+        margins = c(10, 10),
+        main = "Genetic Divergence (FST) b/w A. thaliana Pop from Sweden & Italy ")
+
+#####################################################################
+########## calculate genetic distance between individuals ########### #nei's
+#####################################################################
+
+stamppNeisD <- stamppNeisD(stampp_vcf, pop = FALSE)
+stamppNeisD_matrix <- as.matrix(stamppNeisD)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppNeisD_matrix) <- 0
+stamppNeisD_matrix[upper.tri(stamppNeisD_matrix)]  <- t(stamppNeisD_matrix)[upper.tri(stamppNeisD_matrix)]
+heatmap(stamppNeisD_matrix)
+
+# add row names
+colnames(stamppNeisD_matrix) <- rownames(stamppNeisD_matrix)
+
+# Create a heatmap with symmetric color scale
+heatmap(stamppNeisD_matrix,
+        symm = TRUE,
+        main = "Genetic Divergence (FST) b/w A. thaliana individuals from Sweden & Italy ")
+
+# If you want to check number columns and start and stop positions then you have to read
+# your "input.vcf" file using "read.vcfR" function from "vcfR" package
+
+at.VCF <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+#get start and stop positions of your vcf file
+head(getFIX(at.VCF))
+
+tail(getFIX(at.VCF))
+
+# Estimate and plot Fst and Tajima'D and Neutrality stats using PopGenome
+
+library("PopGenome")
+
+At_Chr <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="1", frompos=1373683, topos=25995710, include.unknown =  TRUE)
+
+#To the class of object At_Chr
+class(At_Chr)
+
+At_Chr
+
+#Examining the variant data
+get.sum.data(At_Chr)
+
+At_Chr@n.biallelic.sites + At_Chr@n.polyallelic.sites
+# 399
+
+#To see what slots in Genome class
+show.slots(At_Chr)
+
+#To check total number of sites
+At_Chr@n.sites
+# 24622028
+
+#To check starting position and last position of genome class
+At_Chr@region.names
+# "1373683 - 25995710"
+
+##Deine populations in your dataset
+
+# Check for population data
+At_Chr@populations
+
+library (readr)
+
+population_info <- read_delim("sample_pop_it_swe.txt", delim = "\t")
+
+# Get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+populations
+At_Chr <- set.populations(At_Chr, populations, diploid = T)
+At_Chr@populations
+
+#Setting up sliding windows
+
+# set chromosome size
+chr <- 24622027
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop <- window_start + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start > chr)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop > chr)
+# 2
+
+# remove windows from the start and stop vectors
+window_start <- window_start[which(window_stop < chr)]
+window_stop <- window_stop[which(window_stop < chr)]
+
+chr - window_stop[length(window_stop)]
+# 26
+
+# save as a data.frame
+windows <- data.frame(start = window_start, stop = window_stop,
+                      mid = window_start + (window_stop-window_start)/2)
+
+# make a sliding window dataset
+At_sw <- sliding.window.transform(At_Chr, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics - nd
+At_sw <- diversity.stats(At_sw, pi = TRUE)
+
+# calculate diversity statistics - FST
+At_sw <- F_ST.stats(At_sw, mode = "nucleotide")
+#"nucleotide" to specify we want it to be calculated sliding averages
+#of nucleotides, rather than using haplotype data
+
+
+#Extracting statistics for visualization
+
+# get the nucleotide diversity data.
+# extract nucleotide diversity and correct for window size
+nd <- At_sw@nuc.diversity.within/100
+
+#estimates need to be corrected for window size - so we divide them by 100 bp.
+
+# Add the population names to each of estimate
+# make population name vector
+pops <- c("IT","SWE")
+
+# set population names
+colnames(nd) <- paste0(pops, "_pi")
+
+# extract fst values
+fst <- t(At_sw@nuc.F_ST.pairwise)
+# t() to transpose the F_ST matrix so that each column is a pairwise
+#comparison and each row is an estimate for a genome window.
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy <- get.diversity(At_sw, between = T)[[2]]/100
+#As with nucleotide diversity, we also corrected d_XY_ for the window size.
+
+# get column names
+x <- colnames(fst)
+# does the same thing as above but by indexing the pops vector
+x <- sub("pop1", pops[1], x)
+x <- sub("pop2", pops[2], x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+# Change the column names of our two data matrices, before we put
+#everything together in our final dataset.
+colnames(fst) <- paste0(x, "_fst")
+colnames(dxy) <- paste0(x, "_dxy")
+
+# Combine nd, FST and d_XY_ datasets with our windows information from earlier into a big dataset.
+
+library(tibble)
+At_data <- as_tibble(data.frame(windows, nd, fst, dxy))
+dim(At_data)
+#492439      7
+At_data
+
+
+#####Visualizing the data - distributions#####
+
+#For the purposes of this session, we will focus mainly on the difference between Italian and Swedish
+#Arabidopsis pop.
+#For example, let's say we want to look at mean nucleotide diversity, we can do that like so:
+
+# select nucleotide diversity data and calculate means
+At_data %>% select(contains("pi")) %>% summarise_all(mean)
+#we used select and contains to select columns from our main dataset that contain
+#pi - i.e. nucleotide diversity columns. We then used summarise_all and mean to calculate
+#the mean value for all of the columns we selected.
+
+# To plot this we need to use "gather" on the data
+library(tidyr)
+pi_g <- At_data %>% select(contains("pi")) %>% gather(key = "populations", value = "pi")
+
+# make a boxplot
+library(ggplot2)
+a <- ggplot(pi_g, aes(populations, pi)) + geom_boxplot() + theme_light() + xlab(NULL)
+a
+
+# Taking the logarithm (in this case, log base 10) of the values can be useful when dealing with data
+# that spans several orders of magnitude. This transformation helps in visually emphasizing relative
+# differences in the data, especially when there are large variations in scale.
+
+pi_g$log_pi <- log10(pi_g$pi)
+
+a <- ggplot(pi_g, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +  # Border color
+  scale_fill_manual(values = c("red", "blue")) +  # Box fill colors
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)")
+
+a
+
+#This makes it much clearer how nucleotide diversity differs among the populations.
+
+#When comparing two boxplots to determine if they are statistically different, one can perform
+# statistical tests such as the t-test or Wilcoxon rank-sum test.
+# Wilcoxon rank-sum test
+wilcox_test_result <- wilcox.test(log_pi ~ populations, data = pi_g)
+
+# Print the test result
+print(wilcox_test_result)
+
+# Add p-value to the plot
+a + annotate("text", x = 1.5, y = max(pi_g$log_pi), label = paste("p =", format.pval(wilcox_test_result$p.value, digits = 3)))
+
+#####Visualizing patterns along the chromosome ####
+#Let's have a look at how FST between Italian and Swedish populations varies along chromosomes.
+#We can do this very simply with ggplot.
+
+a <- ggplot(At_data, aes(mid/10^6, IT_SWE_fst)) + geom_line(colour = "red")
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a + theme_light()
+
+
+#to plot nd, FST and d_XY_ to examine how they co-vary along the genome.
+#This requires a bit of data manipulation, but is relatively straightforward. We will break it down into steps.
+# select data of interest
+hs <- At_data %>% select(mid, IT_pi, SWE_pi, IT_SWE_fst, IT_SWE_dxy)
+
+# To set Fst values smaller than zero to zero in the specified columns of a data frame using dplyr and
+# the pipe operator %>%, you can use the mutate function along with across
+
+hs <- At_data %>%
+  select(mid, IT_pi, SWE_pi, IT_SWE_fst, IT_SWE_dxy) %>%
+  mutate(across(c(IT_SWE_fst, IT_SWE_dxy), ~ ifelse(. < 0, 0, .)))
+
+# use gather to rearrange everything
+hs_g <- gather(hs, -mid, key = "stat", value = "value")
+
+#Plot everything together like so:
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + xlab("Position (Mb)")
+a + theme_light()
+
+# To take the logarithm of the value variable in your ggplot code, you can use the log10() function
+# within the aes() mapping.
+hs_g$log_value <- log10(hs_g$value)
+
+a <- ggplot(hs_g, aes(mid/10^6, log_value, colour = stat)) + geom_line()
+a <- a + xlab("Position (Mb)")
+a + theme_light()
+
+# construct a plot with facets
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + facet_grid(stat~., scales = "free_y")
+a <- a + xlab("Position (Mb)")
+a + theme_light() + theme(legend.position = "none")
+
+#The facet_grid function allows us to split our data across panels for quick and easy visualization.
+#In this case, we split our data by the stat variable - we used stat~. to specify we want this done
+#by rows (compare with .~stat for the column equivalent). We also specified that we wanted the scales
+#on our y-axes to vary with scales = free_y.
+
+#However, before we examine our plot in detail, it would also be easier if we rearranged everything
+#so FST came at the top, ?? beneath it and then finally, d_XY_. How can we do that? Well we need to
+#reorder the stat factor in our hs_g dataset.
+# first make a factor
+x <- factor(hs_g$stat)
+# then reorder the levels
+x <- factor(x, levels(x)[c(3, 1, 4, 2)])
+# add to data.frame
+hs_g$stat <- x
+#This looks a little complicated, but in the square brackets above we simply rearranged what order
+#our facets are displayed. We can replot our figure to demonstrate this:
+
+# construct a plot with facets
+a <- ggplot(hs_g, aes(mid/10^6, value, colour = stat)) + geom_line()
+a <- a + facet_grid(stat~., scales = "free_y")
+a <- a + xlab("Position (Mb)")
+a + theme_light() + theme(legend.position = "none")
+
+#### calculate neutrality statistics####
+At_sw <- neutrality.stats(At_sw)
+
+get.neutrality(At_sw)
+#      neurality stats
+#pop 1 numeric,4431951
+#pop 2 numeric,4431951
+
+#Let's look at the first population [[1]].
+get.neutrality(At_sw)[[1]]
+
+#Let's look at the second population [[2]].
+get.neutrality(At_sw)[[2]]
+
+#extract Tajma's D
+td <- At_sw@Tajima.D/100
+
+# set population names
+colnames(td) <- paste0(pops, "_td")
+
+
+###Delimitate windows on chromosome
+
+# set chromosome start and end position
+chri<-1005
+chrl <- 24622027
+
+library(tibble)
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data <- as.tibble(data.frame(windows, td,nd))
+nrow(windows)
+nrow(nd)
+(chrl-chri)/50
+nrow(ara_data)
+head(ara_data)
+ara_data %>% select(contains("pi")) %>% summarise_all(mean)
+
+### load selected positions from chromosome e.g., gene 4 5kb upstream and down stream of Defense related genes
+#
+bed<-read.table("At_defense_only.bed")
+head(bed)
+
+colnames(bed)<-c("chr", "begin","end")
+DF<-vector(length=nrow(ara_data))
+length(DF)
+
+#ara_data <- as.tibble(data.frame(windows, nd, DF))###if you only want to look at pi
+ara_data <- as.tibble(data.frame(windows[1:492439,], nd, td, DF))##if you want to look at tajima D and nucleotide diversity
+
+for (i in 2:nrow(bed)){ara_data$DF[which(ara_data$start>bed$begin[i]&ara_data$stop<bed$end[i]) ]<-"DF"}##each window that overlaps a DF is tagged
+ara_data$DF<-as.factor(ara_data$DF)
+summary(ara_data)
+
+####
+# Italy
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$IT_pi[ara_data$DF=="DF"]
+sub2<-ara_data$IT_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not.
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$IT_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$IT_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$IT_td[ara_data$DF=="DF"]
+sub2<-ara_data$IT_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$IT_td), na.rm=T), main="Distribution Tajima D", ylim = c(0, 230))
+lines(density((ara_data$IT_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=IT_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$IT_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = IT_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.03, max(ara_data$IT_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D")
+# Center the title
+p <- p + ggtitle("Distribution Tajima D") +
+  theme(plot.title = element_text(hjust = 0.5)) # Adjust the hjust value for centering
+
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,IT_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)
+
+p<-ggplot(sub2, aes(mid,IT_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3)+ theme_bw()
+
+####
+# Sweden
+###
+
+##Kolmogorov smirnov test - compare the distributions of Pi
+sub1<-ara_data$SWE_pi[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_pi[ara_data$DF!="DF"]
+ks.test(sub1, sub2)###difference is very significant if windows are small, otherwise not.
+
+#Draw Density plot "Pi"
+plot(density(log(ara_data$SWE_pi)), main="Distribution log Pi")
+lines(density(log(ara_data$SWE_pi[ara_data$DF=="DF"])), col="red")
+
+##Kolmogorov smirnov test - compare the distributions of Tajima's D
+sub1<-ara_data$SWE_td[ara_data$DF=="DF"]
+sub2<-ara_data$SWE_td[ara_data$DF!="DF"]
+ks.test(sub1, sub2)
+
+# Draw Density plots "Tajima's D"
+plot(density((ara_data$SWE_td), na.rm=T), main="Distribution Tajima D")
+lines(density((ara_data$SWE_td[ara_data$DF=="DF"]), na.rm = T), col="red")
+
+p<-ggplot(ara_data, aes(x=SWE_td, fill=DF))
+p+geom_density(alpha=0.4)
+
+##
+# Base R plot
+plot(density(ara_data$SWE_td, na.rm = TRUE), main = "Distribution Tajima D")
+lines(density(ara_data$SWE_td[ara_data$DF == "DF"], na.rm = TRUE), col = "red")
+
+# ggplot version
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_data$SWE_td, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_data, aes(x = SWE_td, fill = DF)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.010, max(ara_data$SWE_td, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution Tajima D") + theme_bw()
+# plot distribution
+p
+
+##Plot along chromosome using ggplot function
+sub1<-(ara_data[ara_data$DF=="DF",])
+sub2<-ara_data[ara_data$DF!="DF",]
+p<-ggplot(sub2, aes(mid,SWE_pi))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+p<-ggplot(sub2, aes(mid,SWE_td))
+p+geom_point(size=2)+geom_point(data=sub1, color="red", size=3) + theme_bw()
+
+
+
+# FST IT/SWE
+
+#as_tibble: Coerce lists and matrices to data frames
+ara_data2 <- as.tibble(data.frame(windows, fst))
+nrow(windows)
+nrow(fst)
+(chrl-chri)/50
+nrow(ara_data2)
+head(ara_data2)
+ara_data2 %>% select(contains("fst")) %>% summarise_all(mean)
+
+### load selected positions from chromosome -> flowering time genes ####
+
+bed2<-read.table("At_defense_only.bed")
+head(bed2)
+
+colnames(bed2)<-c("chr", "begin","end")
+DF2<-vector(length=nrow(ara_data2))
+ara_data2 <- as.tibble(data.frame(windows, fst, DF2))
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF22 <- "all"
+} #horrible but works
+
+for (i in 2:nrow(bed2)){
+  ara_data2$DF2[which(ara_data2$start>bed2$begin[i]&ara_data2$stop<bed2$end[i])]<-"DF2"
+}
+
+DF2<-vector(length=nrow(ara_data2))
+
+ara_data2$DF2<-as.factor(ara_data2$DF2)
+summary(ara_data2)
+
+
+Defense <- ara_data2 %>% filter(DF2 == "DF2")
+Defense_fst <- Defense %>% filter(IT_SWE_fst >= 0)
+
+a <- ggplot(Defense_fst, aes(mid/10^6, IT_SWE_fst)) + geom_line(colour = "red")
+a <- a + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+a + theme_light()
+
+# plot with ara_data FST (<=0 values not removed) and FLOWER_fst (all flowering time FSTs also with <=0 values not removed)
+tip <- ggplot() +
+  geom_line(data=ara_data2, aes(mid/10^6, IT_SWE_fst), colour = "blue") +
+  geom_line(data=Defense, aes(mid/10^6, IT_SWE_fst), colour="pink")
+tip <- tip + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+tip + theme_light()
+
+# remove fst values <=0
+ara_d2 <- ara_data2 %>% filter(IT_SWE_fst >= 0)
+ara_d2
+
+# calculate means
+mean_fst <- mean(ara_d2$IT_SWE_fst)
+mean_defense <- mean(Defense_fst$IT_SWE_fst)
+
+ks.test(ara_d2$IT_SWE_fst, Defense_fst$IT_SWE_fst)
+#p-value: 1
+
+#outliers 95% quantile
+threshold_95 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.975, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_95 = ifelse(Defense_fst$IT_SWE_fst > threshold_95, "outlier", "background"))
+
+#outliers 99% quantile
+threshold_99 <- quantile(Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"], 0.995, na.rm = T)
+Defense_fst <- Defense_fst %>% mutate(outlier_99 = ifelse(Defense_fst$IT_SWE_fst > threshold_99, "outlier", "background"))
+
+# plot with ara data and Defense_fst (all fst values below 0 removed)
+top <- ggplot() +
+  geom_point(data=ara_d2, aes(mid/10^6, IT_SWE_fst), colour = "lightblue") +
+  geom_point(data=Defense_fst, aes(mid/10^6, IT_SWE_fst), colour="blue") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_95 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="orange") +
+  geom_point(data=Defense_fst[Defense_fst$outlier_99 == "outlier",], aes(mid/10^6, IT_SWE_fst), color="red") +
+  geom_hline(yintercept = mean_fst) +
+  geom_hline(yintercept = mean_defense, colour="orange")
+
+top <- top + xlab("Position (Mb)") + ylab(expression(italic(F)[ST]))
+top + theme_light()
+
+#################################################################################
+# Draw Density plots
+
+plot(density((ara_d2$IT_SWE_fst), na.rm=T), main="Distribution FST", )
+lines(density((Defense_fst$IT_SWE_fst[Defense_fst$DF2=="DF2"]), na.rm = T), col="red")
+
+p<-ggplot(ara_d2, aes(x=IT_SWE_fst, fill=DF2))
+p+geom_density(alpha=0.4)
+
+
+# To estimate the lowest value of the x-axis for a density plot
+lowest_x <- min(ara_d2$IT_SWE_fst, na.rm = TRUE)
+lowest_x
+
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_continuous(limits = c(-0.05, max(ara_d2$IT_SWE_fst, na.rm = TRUE))) +  # Set x-axis limit
+  ggtitle("Distribution ESP-SWE FST")
+# plot distribution
+p
+
+# ggplot version with log scale for x-axis
+p <- ggplot(ara_d2, aes(x = IT_SWE_fst, fill = DF2)) +
+  geom_density(alpha = 0.4) +
+  scale_x_log10() +  # Set log scale for x-axis
+  ggtitle("Distribution IT-SWE FST") +
+  theme_bw()
+
+# plot distribution
+p
+
+############################################################
+### To check where these FST outliers are in the genome ####
+###                                                     ####
+############################################################
+
+# Outliers 95% quantile whole genome
+threshold_95 <- quantile(ara_d2$IT_SWE_fst, 0.95, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_95 = ifelse(ara_d2$IT_SWE_fst > threshold_95, "outlier", "background"))
+ara_d2
+
+# Outliers 99% quantile whole genome
+threshold_99 <- quantile(ara_d2$IT_SWE_fst, 0.99, na.rm = T)
+ara_d2 <- ara_d2 %>% mutate(outlier_99 = ifelse(ara_d2$IT_SWE_fst > threshold_99, "outlier", "background"))
+ara_d2
+
+out <- ara_d2 %>% filter(outlier_95 == "outlier")
+out2 <- out %>% filter(DF2 == "DF2")
+out2 #no 99% outliers but 2 95% outliers which both correspond to sucrose synthase 3
+
+print(out2,n=50)
+
+### FRI.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(vcfR)
+library(VariantAnnotation)
+library (readr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(dunn.test)
+
+
+# Read the VCF file
+
+FRI <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="4", frompos=269026, topos=271503,include.unknown = TRUE)
+
+population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
+
+# now get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+
+# now set
+FRI <- set.populations(FRI, populations, diploid = T)
+##check if it worked
+FRI@populations
+
+##To check total number of sites
+FRI@n.sites
+chr <- 2478
+
+####Setting up sliding windows###
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop_Chr <- window_start_Chr + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start_Chr > chr)
+# but some window stop positions do occur past the final point
+sum(window_stop_Chr > chr)
+
+# remove windows from the start and stop vectors
+window_start_Chr <- window_start_Chr[which(window_stop_Chr < chr)]
+window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
+
+chr - window_stop_Chr[length(window_stop_Chr)]
+
+# save as a data.frame
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
+                          mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
+
+# make a sliding window dataset
+At_sw_Chr <- sliding.window.transform(FRI, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics
+At_sw_Chr <- diversity.stats(At_sw_Chr, pi = TRUE)
+
+
+#Next we will calculate FST, which again is very straight forward with a single command.
+
+### calculate diversity statistics
+At_sw_Chr <- F_ST.stats(At_sw_Chr, mode = "nucleotide")
+
+#### calculate neutrality statistics####
+At_sw_Chr <- neutrality.stats(At_sw_Chr)
+
+####Extracting statistics for visualization####
+
+#extract nucleotide diversity and correct for window size
+nd_Chr <- At_sw_Chr@nuc.diversity.within/100
+
+
+# make population name vector
+pops <- c("IT-N", "IT-S","SW-N", "SW-S")
+# set population names
+colnames(nd_Chr) <- paste0(pops, "_pi")
+
+# extract fst values
+fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
+
+# get column names
+x <- colnames(fst_Chr)
+fst_Chr
+# Loop through each population and replace the corresponding population name in the column names
+for (i in 1:length(pops)) {
+  pattern <- paste0("pop", i)
+  x <- sub(pattern, pops[i], x)
+}
+
+# look at x to confirm the replacement has occurred
+print(x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+#Make clear these names are for either FST or d_XY_.
+paste0(x, "_fst")
+paste0(x, "_dxy")
+
+#Change the column names of our two data matrices
+colnames(fst_Chr) <- paste0(x, "_fst")
+colnames(dxy_Chr) <- paste0(x, "_dxy")
+
+#extract Tajma's D and set population names
+td_Chr <- At_sw_Chr@Tajima.D/100
+
+colnames(td_Chr) <- paste0(pops, "_td")
+
+
+#Combine the data into a big dataset
+
+At_data_Chr <- as.tibble(data.frame(windows_Chr, td_Chr, nd_Chr, fst_Chr, dxy_Chr))
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+At_data_Chr
+
+################################
+
+#Nucleotide diversity pi
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+
+pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g_Chr
+
+
+pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
+
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +  # Border color
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Nucleotide diversity of FRIGIDA gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(pi)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a_pi_Chr
+
+
+# Wilcoxon rank-sum test after filtering the data and two select two populations of your choice
+comparison_data_Chr <- pi_g_Chr %>% filter(populations %in% c("IT.S_pi", "SW.N_pi"))
+
+# Perform Wilcoxon rank-sum test
+wilcox_test_pi_Chr <- wilcox.test(log_pi ~ populations, data = comparison_data_Chr)
+
+# Print the test result
+print(wilcox_test_pi_Chr)
+
+# Kruskal-Wallis test
+kruskal_test_pi_Chr <- kruskal.test(log_pi ~ populations, data = pi_g_Chr)
+
+# Print the test result
+print(kruskal_test_pi_Chr)
+
+# generate boxplot again
+a_pi_Chr
+
+# Add Kruskal-Wallis test p-value to the plot
+a_pi_Chr + annotate("text", x = 3, y = max(pi_g_Chr$log_pi)-0.1, label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_pi_Chr$p.value, digits = 3))) +
+  annotate("text", x = 3, y = max(pi_g_Chr$log_pi), label = paste("Wilcox test IT.S SW.N p =", format.pval(wilcox_test_pi_Chr$p.value, digits = 3)))
+
+
+
+
+###
+# Compare pi density distributions of populations
+###
+
+subset_IT_N_pi <- log(At_data_Chr$IT.N_pi[!is.na(At_data_Chr$IT.N_pi) & !is.nan(log(At_data_Chr$IT.N_pi))])
+subset_SW_N_pi <- log(At_data_Chr$SW.N_pi[!is.na(At_data_Chr$SW.N_pi) & !is.nan(log(At_data_Chr$SW.N_pi))])
+subset_IT_S_pi <- log(At_data_Chr$IT.S_pi[!is.na(At_data_Chr$IT.S_pi) & !is.nan(log(At_data_Chr$IT.S_pi))])
+subset_SW_S_pi <- log(At_data_Chr$SW.S_pi[!is.na(At_data_Chr$SW.S_pi) & !is.nan(log(At_data_Chr$SW.S_pi))])
+
+# Perform Kruskal-Wallis test
+pi_data <- list(
+  SW.N = subset_SW_N_pi,
+  IT.N = subset_IT_N_pi,
+  SW.S = subset_SW_S_pi,
+  IT.S = subset_IT_S_pi
+)
+
+kruskal_pi_dist <- kruskal.test(pi_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_pi_dist)
+
+if (kruskal_pi_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(pi_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+# Plot the density
+plot(density(subset_IT_N_pi), col = "red", main = "Distribution log Nucleotide Diversity")
+lines(density(subset_SW_S_pi), col="lightblue")
+lines(density(subset_SW_N_pi), col="blue")
+lines(density(subset_IT_S_pi), col="orange")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+# Add legend for Kruskal-Wallis test p-value
+legend("topleft",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
+       cex=1)
+legend("topleft",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
+       yjust = 1.0)
+
+### FLC.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(vcfR)
+library(VariantAnnotation)
+library (readr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(dunn.test)
+
+# Read the VCF file
+
+FLC <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="5", frompos=3173497, topos=3179448,include.unknown = TRUE)
+
+population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
+
+# now get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+
+# now set
+FLC <- set.populations(FLC, populations, diploid = T)
+##check if it worked
+FLC@populations
+
+##To check total number of sites
+FLC@n.sites
+chr <- 5952
+
+####Setting up sliding windows###
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop_Chr <- window_start_Chr + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start_Chr > chr)
+# but some window stop positions do occur past the final point
+sum(window_stop_Chr > chr)
+
+# remove windows from the start and stop vectors
+window_start_Chr <- window_start_Chr[which(window_stop_Chr < chr)]
+window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
+
+chr - window_stop_Chr[length(window_stop_Chr)]
+
+# save as a data.frame
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
+                          mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
+
+# make a sliding window dataset
+At_sw_Chr <- sliding.window.transform(FLC, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics
+At_sw_Chr <- diversity.stats(At_sw_Chr, pi = TRUE)
+
+
+#Next we will calculate FST, which again is very straight forward with a single command.
+
+### calculate diversity statistics
+At_sw_Chr <- F_ST.stats(At_sw_Chr, mode = "nucleotide")
+
+#### calculate neutrality statistics####
+At_sw_Chr <- neutrality.stats(At_sw_Chr)
+
+####Extracting statistics for visualization####
+
+#extract nucleotide diversity and correct for window size
+nd_Chr <- At_sw_Chr@nuc.diversity.within/100
+
+
+# make population name vector
+pops <- c("IT-N", "IT-S","SW-N", "SW-S")
+# set population names
+colnames(nd_Chr) <- paste0(pops, "_pi")
+
+# extract fst values
+fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
+
+# get column names
+x <- colnames(fst_Chr)
+fst_Chr
+# Loop through each population and replace the corresponding population name in the column names
+for (i in 1:length(pops)) {
+  pattern <- paste0("pop", i)
+  x <- sub(pattern, pops[i], x)
+}
+
+# look at x to confirm the replacement has occurred
+print(x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+#Make clear these names are for either FST or d_XY_.
+paste0(x, "_fst")
+paste0(x, "_dxy")
+
+#Change the column names of our two data matrices
+colnames(fst_Chr) <- paste0(x, "_fst")
+colnames(dxy_Chr) <- paste0(x, "_dxy")
+
+#extract Tajma's D and set population names
+td_Chr <- At_sw_Chr@Tajima.D/100
+
+colnames(td_Chr) <- paste0(pops, "_td")
+
+
+#Combine the data into a big dataset
+
+At_data_Chr <- as.tibble(data.frame(windows_Chr, td_Chr, nd_Chr, fst_Chr, dxy_Chr))
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+At_data_Chr
+
+################################
+
+#Nucleotide diversity pi
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+
+pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g_Chr
+
+
+pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
+
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +  # Border color
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Nucleotide diversity of FLC gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(pi)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a_pi_Chr
+
+
+# Wilcoxon rank-sum test after filtering the data and two select two populations of your choice
+comparison_data_Chr <- pi_g_Chr %>% filter(populations %in% c("IT.S_pi", "SW.N_pi"))
+
+# Perform Wilcoxon rank-sum test
+wilcox_test_pi_Chr <- wilcox.test(log_pi ~ populations, data = comparison_data_Chr)
+
+# Print the test result
+print(wilcox_test_pi_Chr)
+
+# Kruskal-Wallis test
+kruskal_test_pi_Chr <- kruskal.test(log_pi ~ populations, data = pi_g_Chr)
+
+# Print the test result
+print(kruskal_test_pi_Chr)
+
+# generate boxplot again
+a_pi_Chr
+
+# Add Kruskal-Wallis test p-value to the plot
+a_pi_Chr + annotate("text", x = 1.5, y = max(pi_g_Chr$log_pi)-0.1, label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_pi_Chr$p.value, digits = 3))) +
+  annotate("text", x = 1.6, y = max(pi_g_Chr$log_pi), label = paste("Wilcox test IT.S SW.N p =", format.pval(wilcox_test_pi_Chr$p.value, digits = 3)))
+
+
+
+
+###
+# Compare pi density distributions of populations
+###
+
+subset_IT_N_pi <- log(At_data_Chr$IT.N_pi[!is.na(At_data_Chr$IT.N_pi) & !is.nan(log(At_data_Chr$IT.N_pi))])
+subset_SW_N_pi <- log(At_data_Chr$SW.N_pi[!is.na(At_data_Chr$SW.N_pi) & !is.nan(log(At_data_Chr$SW.N_pi))])
+subset_IT_S_pi <- log(At_data_Chr$IT.S_pi[!is.na(At_data_Chr$IT.S_pi) & !is.nan(log(At_data_Chr$IT.S_pi))])
+subset_SW_S_pi <- log(At_data_Chr$SW.S_pi[!is.na(At_data_Chr$SW.S_pi) & !is.nan(log(At_data_Chr$SW.S_pi))])
+
+# Perform Kruskal-Wallis test
+pi_data <- list(
+  SW.N = subset_SW_N_pi,
+  IT.N = subset_IT_N_pi,
+  SW.S = subset_SW_S_pi,
+  IT.S = subset_IT_S_pi
+)
+
+kruskal_pi_dist <- kruskal.test(pi_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_pi_dist)
+
+if (kruskal_pi_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(pi_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+# Plot the density
+plot(density(subset_IT_S_pi), col="orange", main = "Distribution log Nucleotide Diversity")
+lines(density(subset_SW_S_pi), col="lightblue")
+lines(density(subset_SW_N_pi), col="blue")
+lines(density(subset_IT_N_pi), col = "red")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+# Add legend for Kruskal-Wallis test p-value
+legend("topleft",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
+       cex=1)
+legend("topleft",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
+       yjust = 1.0)
+
+
+###########################################
+
+# TajimaD (td)
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("td_Chr")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+td_g_Chr <- At_data_Chr %>% dplyr::select(contains("td")) %>% gather(key = "populations", value = "td")
+
+# Remove rows with missing values
+td_g2_Chr <- na.omit(td_g_Chr)
+td_g2_Chr
+
+# Take the logarithm
+td_g2_Chr$log_td <- log10(td_g2_Chr$td)
+
+a2_td_g2_Chr <- ggplot(td_g2_Chr, aes(populations, log_td, fill = populations)) +
+  geom_boxplot(color = "black") +  # Border color
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Tajma's D of FLC gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(Tajima's D)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a2_td_g2_Chr
+
+
+# Kruskal-Wallis test
+kruskal_test_td_Chr <- kruskal.test(log_td ~ populations, data = td_g2_Chr)
+
+# Print the test result
+print(kruskal_test_td_Chr)
+
+# generate boxplot again
+a2_td_g2_Chr
+
+# adjust text positions by changing x and y below
+a2_td_g2_Chr +
+  annotate("text", x = 0.8, y = -1.6,
+           label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_td_Chr$p.value, digits = 3)),
+           size = 5)
+
+
+
+###
+# Compare "Tajima's D" density distributions of populations
+###
+
+subset_IT_td <- log(At_data_Chr$IT_td[!is.na(At_data_Chr$IT_td) & !is.nan(log(At_data_Chr$IT_td))])
+subset_SW_td <- log(At_data_Chr$SW_td[!is.na(At_data_Chr$SW_td) & !is.nan(log(At_data_Chr$SW_td))])
+
+# Perform Kruskal-Wallis test
+td_data <- list(
+  SW = subset_SW_td,
+  IT = subset_IT_td,
+)
+
+kruskal_td_dist <- kruskal.test(td_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_td_dist)
+
+if (kruskal_td_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(td_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+
+
+# modify code change xlim to see complete distribution
+plot(density(subset_SW_S_td), col="lightblue", main = "Distribution log TajimaD")
+lines(density(subset_IT_S_td), col="orange")
+lines(density(subset_SW_N_td), col="blue")
+lines(density(subset_IT_N_td), col = "red")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+# Add legend for Kruskal-Wallis test p-value
+legend("topleft",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_td_dist$p.value, digits=4)),
+       bty="n",
+       cex=1)
+
+
+### ELF9.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(vcfR)
+library(VariantAnnotation)
+library (readr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(dunn.test)
+
+
+ELF9 <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="5", frompos=5311207, topos= 5315767,include.unknown = TRUE)
+
+population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
+
+# now get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+
+# now set
+ELF9 <- set.populations(ELF9, populations, diploid = T)
+##check if it worked
+ELF9@populations
+
+##To check total number of sites
+ELF9@n.sites
+chr <- 4561
+
+####Setting up sliding windows###
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop_Chr <- window_start_Chr + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start_Chr > chr)
+# but some window stop positions do occur past the final point
+sum(window_stop_Chr > chr)
+
+# remove windows from the start and stop vectors
+window_start_Chr <- window_start_Chr[which(window_stop_Chr < chr)]
+window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
+
+chr - window_stop_Chr[length(window_stop_Chr)]
+
+# save as a data.frame
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
+                          mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
+
+# make a sliding window dataset
+At_sw_Chr <- sliding.window.transform(ELF9, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics
+At_sw_Chr <- diversity.stats(At_sw_Chr, pi = TRUE)
+
+
+#Next we will calculate FST, which again is very straight forward with a single command.
+
+### calculate diversity statistics
+At_sw_Chr <- F_ST.stats(At_sw_Chr, mode = "nucleotide")
+
+#### calculate neutrality statistics####
+At_sw_Chr <- neutrality.stats(At_sw_Chr)
+
+####Extracting statistics for visualization####
+
+#extract nucleotide diversity and correct for window size
+nd_Chr <- At_sw_Chr@nuc.diversity.within/100
+
+
+# make population name vector
+pops <- c("IT-N", "IT-S","SW-N", "SW-S")
+# set population names
+colnames(nd_Chr) <- paste0(pops, "_pi")
+
+# extract fst values
+fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
+
+# get column names
+x <- colnames(fst_Chr)
+fst_Chr
+# Loop through each population and replace the corresponding population name in the column names
+for (i in 1:length(pops)) {
+  pattern <- paste0("pop", i)
+  x <- sub(pattern, pops[i], x)
+}
+
+# look at x to confirm the replacement has occurred
+print(x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+#Make clear these names are for either FST or d_XY_.
+paste0(x, "_fst")
+paste0(x, "_dxy")
+
+#Change the column names of our two data matrices
+colnames(fst_Chr) <- paste0(x, "_fst")
+colnames(dxy_Chr) <- paste0(x, "_dxy")
+
+#extract Tajma's D and set population names
+td_Chr <- At_sw_Chr@Tajima.D/100
+
+colnames(td_Chr) <- paste0(pops, "_td")
+
+
+#Ok so now that our td, nd, FST and d_XY_ datasets are ready, we can combine them all together
+#with our windows information from earlier into a big dataset.
+
+At_data_Chr <- as.tibble(data.frame(windows_Chr, td_Chr, nd_Chr, fst_Chr, dxy_Chr))
+
+
+#Nucleotide diversity pi
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+
+pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+
+
+pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
+
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Nucleotide Diversity of ELF9 gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(pi)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a_pi_Chr
+
+
+# You can proceed to Wilcoxon rank-sum test after you
+# filter data and two select two populations of your choice
+# not correct way to do multiple pairwise comparisons
+comparison_data_Chr <- pi_g_Chr %>% filter(populations %in% c("IT.S_pi", "SW.N_pi"))
+
+# Perform Wilcoxon rank-sum test
+wilcox_test_pi_Chr <- wilcox.test(log_pi ~ populations, data = comparison_data_Chr)
+
+# Print the test result
+print(wilcox_test_pi_Chr)
+
+# Kruskal-Wallis test
+kruskal_test_pi_Chr <- kruskal.test(log_pi ~ populations, data = pi_g_Chr)
+
+# Print the test result
+print(kruskal_test_pi_Chr)
+
+# generate boxplot again
+a_pi_Chr
+
+# Add Kruskal-Wallis test p-value to the plot
+a_pi_Chr + annotate("text", x = 1.5, y = max(pi_g_Chr$log_pi)-0.1, label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_pi_Chr$p.value, digits = 3))) +
+  annotate("text", x = 1.6, y = max(pi_g_Chr$log_pi), label = paste("Wilcox test IT.S SW.N p =", format.pval(wilcox_test_pi_Chr$p.value, digits = 3)))
+
+
+###
+# Compare pi density distributions of populations
+###
+
+subset_IT_N_pi <- log(At_data_Chr$IT.N_pi[!is.na(At_data_Chr$IT.N_pi) & !is.nan(log(At_data_Chr$IT.N_pi))])
+subset_SW_N_pi <- log(At_data_Chr$SW.N_pi[!is.na(At_data_Chr$SW.N_pi) & !is.nan(log(At_data_Chr$SW.N_pi))])
+subset_IT_S_pi <- log(At_data_Chr$IT.S_pi[!is.na(At_data_Chr$IT.S_pi) & !is.nan(log(At_data_Chr$IT.S_pi))])
+subset_SW_S_pi <- log(At_data_Chr$SW.S_pi[!is.na(At_data_Chr$SW.S_pi) & !is.nan(log(At_data_Chr$SW.S_pi))])
+
+# Perform Kruskal-Wallis test
+pi_data <- list(
+  SW.N = subset_SW_N_pi,
+  IT.N = subset_IT_N_pi,
+  SW.S = subset_SW_S_pi,
+  IT.S = subset_IT_S_pi
+)
+
+kruskal_pi_dist <- kruskal.test(pi_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_pi_dist)
+
+if (kruskal_pi_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(pi_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+
+# Plot the density
+plot(density(subset_SW_N_pi), col="blue", main = "Distribution log Nucleotide Diversity")
+lines(density(subset_SW_S_pi), col="lightblue")
+lines(density(subset_IT_S_pi), col="orange")
+lines(density(subset_IT_N_pi), col = "red")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+# Add legend for Kruskal-Wallis test p-value
+legend("top",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
+       cex=1)
+
+legend("top",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
+       yjust = 1.0)
+
+### VIN3.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(vcfR)
+library(VariantAnnotation)
+library (readr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(dunn.test)
+
+VIN3 <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="5", frompos=23246395, topos=23249504,include.unknown = TRUE)
+
+population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
+
+# now get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+
+# now set
+VIN3 <- set.populations(VIN3, populations, diploid = T)
+##check if it worked
+VIN3@populations
+
+##To check total number of sites
+VIN3@n.sites
+chr <- 3110
+
+####Setting up sliding windows###
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop_Chr <- window_start_Chr + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start_Chr > chr)
+# but some window stop positions do occur past the final point
+sum(window_stop_Chr > chr)
+
+# remove windows from the start and stop vectors
+window_start_Chr <- window_start_Chr[which(window_stop_Chr < chr)]
+window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
+
+chr - window_stop_Chr[length(window_stop_Chr)]
+
+# save as a data.frame
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
+                          mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
+
+# make a sliding window dataset
+At_sw_Chr <- sliding.window.transform(VIN3, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics
+At_sw_Chr <- diversity.stats(At_sw_Chr, pi = TRUE)
+
+
+#Next we will calculate FST, which again is very straight forward with a single command.
+
+### calculate diversity statistics
+At_sw_Chr <- F_ST.stats(At_sw_Chr, mode = "nucleotide")
+
+#### calculate neutrality statistics####
+At_sw_Chr <- neutrality.stats(At_sw_Chr)
+
+####Extracting statistics for visualization####
+
+#extract nucleotide diversity and correct for window size
+nd_Chr <- At_sw_Chr@nuc.diversity.within/100
+
+
+# make population name vector
+pops <- c("IT-N", "IT-S","SW-N", "SW-S")
+# set population names
+colnames(nd_Chr) <- paste0(pops, "_pi")
+
+# extract fst values
+fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
+
+# get column names
+x <- colnames(fst_Chr)
+fst_Chr
+# Loop through each population and replace the corresponding population name in the column names
+for (i in 1:length(pops)) {
+  pattern <- paste0("pop", i)
+  x <- sub(pattern, pops[i], x)
+}
+
+# look at x to confirm the replacement has occurred
+print(x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+#Make clear these names are for either FST or d_XY_.
+
+paste0(x, "_fst")
+paste0(x, "_dxy")
+
+#Change the column names of our two data matrices
+colnames(fst_Chr) <- paste0(x, "_fst")
+colnames(dxy_Chr) <- paste0(x, "_dxy")
+
+#extract Tajma's D and set population names
+td_Chr <- At_sw_Chr@Tajima.D/100
+
+colnames(td_Chr) <- paste0(pops, "_td")
+
+
+#Combine datasets together with our windows information from earlier into a big dataset.
+
+At_data_Chr <- as.tibble(data.frame(windows_Chr, td_Chr, nd_Chr, fst_Chr, dxy_Chr))
+
+
+#Nucleotide diversity pi
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+
+pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g_Chr
+
+
+pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
+
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Nucleotide Diversity of VIN3 gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(pi)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a_pi_Chr
+
+
+# Wilcoxon rank-sum test after filtering data and two select two populations of your choice
+
+comparison_data_Chr <- pi_g_Chr %>% filter(populations %in% c("IT.S_pi", "SW.N_pi"))
+
+# Perform Wilcoxon rank-sum test
+wilcox_test_pi_Chr <- wilcox.test(log_pi ~ populations, data = comparison_data_Chr)
+
+# Print the test result
+print(wilcox_test_pi_Chr)
+
+# Kruskal-Wallis test
+kruskal_test_pi_Chr <- kruskal.test(log_pi ~ populations, data = pi_g_Chr)
+
+# Print the test result
+print(kruskal_test_pi_Chr)
+
+# generate boxplot again
+a_pi_Chr
+
+# Add Kruskal-Wallis test p-value to the plot
+a_pi_Chr + annotate("text", x = 1.5, y = max(pi_g_Chr$log_pi)-0.1, label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_pi_Chr$p.value, digits = 3))) +
+  annotate("text", x = 1.6, y = max(pi_g_Chr$log_pi), label = paste("Wilcox test IT.S SW.N p =", format.pval(wilcox_test_pi_Chr$p.value, digits = 3)))
+
+
+###
+# Compare pi density distributions of populations
+###
+
+subset_IT_N_pi <- log(At_data_Chr$IT.N_pi[!is.na(At_data_Chr$IT.N_pi) & !is.nan(log(At_data_Chr$IT.N_pi))])
+subset_SW_N_pi <- log(At_data_Chr$SW.N_pi[!is.na(At_data_Chr$SW.N_pi) & !is.nan(log(At_data_Chr$SW.N_pi))])
+subset_IT_S_pi <- log(At_data_Chr$IT.S_pi[!is.na(At_data_Chr$IT.S_pi) & !is.nan(log(At_data_Chr$IT.S_pi))])
+subset_SW_S_pi <- log(At_data_Chr$SW.S_pi[!is.na(At_data_Chr$SW.S_pi) & !is.nan(log(At_data_Chr$SW.S_pi))])
+
+# Perform Kruskal-Wallis test
+pi_data <- list(
+  SW.N = subset_SW_N_pi,
+  IT.N = subset_IT_N_pi,
+  SW.S = subset_SW_S_pi,
+  IT.S = subset_IT_S_pi
+)
+
+kruskal_pi_dist <- kruskal.test(pi_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_pi_dist)
+
+if (kruskal_pi_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(pi_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+
+# Plot the density
+plot(density(subset_SW_S_pi), col="lightblue", main = "Distribution log Nucleotide Diversity")
+lines(density(subset_IT_S_pi), col="orange")
+lines(density(subset_SW_N_pi), col="blue")
+lines(density(subset_IT_N_pi), col = "red")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+# Add legend for Kruskal-Wallis test p-value
+legend("topleft",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
+       cex=1)
+legend("topleft",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
+       yjust = 1.0)
+
+### VRN2.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(vcfR)
+library(VariantAnnotation)
+library (readr)
+library(dplyr)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(dunn.test)
+
+VRN2 <- readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz", numcols=89,tid="4", frompos=9476069, topos=9479878,include.unknown = TRUE)
+
+population_info <- read_delim("pop1_sample_pop.txt", delim = "\t")
+
+# now get the data for the populations
+populations <- split(population_info$sample, population_info$pop)
+
+# now set
+VRN2 <- set.populations(VRN2, populations, diploid = T)
+##check if it worked
+VRN2@populations
+
+##To check total number of sites
+VRN2@n.sites
+chr <- 3810
+
+####Setting up sliding windows###
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+# use seq to find the start points of each window
+window_start_Chr <- seq(from = 1, to = chr, by = window_jump)
+# add the size of the window to each start point
+window_stop_Chr <- window_start_Chr + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start_Chr > chr)
+# but some window stop positions do occur past the final point
+sum(window_stop_Chr > chr)
+
+# remove windows from the start and stop vectors
+window_start_Chr <- window_start_Chr[which(window_stop_Chr < chr)]
+window_stop_Chr <- window_stop_Chr[which(window_stop_Chr < chr)]
+
+chr - window_stop_Chr[length(window_stop_Chr)]
+
+# save as a data.frame
+windows_Chr <- data.frame(start = window_start_Chr, stop = window_stop_Chr,
+                          mid = window_start_Chr + (window_stop_Chr-window_start_Chr)/2)
+
+# make a sliding window dataset
+At_sw_Chr <- sliding.window.transform(VRN2, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics
+At_sw_Chr <- diversity.stats(At_sw_Chr, pi = TRUE)
+
+
+#Next we will calculate FST, which again is very straight forward with a single command.
+
+### calculate diversity statistics
+At_sw_Chr <- F_ST.stats(At_sw_Chr, mode = "nucleotide")
+
+#### calculate neutrality statistics####
+At_sw_Chr <- neutrality.stats(At_sw_Chr)
+
+####Extracting statistics for visualization####
+
+#extract nucleotide diversity and correct for window size
+nd_Chr <- At_sw_Chr@nuc.diversity.within/100
+
+
+# make population name vector
+pops <- c("IT-N", "IT-S","SW-N", "SW-S")
+# set population names
+colnames(nd_Chr) <- paste0(pops, "_pi")
+
+# extract fst values
+fst_Chr <- t(At_sw_Chr@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy_Chr <- get.diversity(At_sw_Chr, between = T)[[2]]/100
+
+# get column names
+x <- colnames(fst_Chr)
+fst_Chr
+# Loop through each population and replace the corresponding population name in the column names
+for (i in 1:length(pops)) {
+  pattern <- paste0("pop", i)
+  x <- sub(pattern, pops[i], x)
+}
+
+# look at x to confirm the replacement has occurred
+print(x)
+
+# replace forward slash
+x <- sub("/", "_", x)
+# look at x to confirm the replacement has occurred
+x
+
+#Make clear these names are for either FST or d_XY_.
+paste0(x, "_fst")
+paste0(x, "_dxy")
+
+#Change the column names of our two data matrices
+colnames(fst_Chr) <- paste0(x, "_fst")
+colnames(dxy_Chr) <- paste0(x, "_dxy")
+
+#extract Tajma's D and set population names
+td_Chr <- At_sw_Chr@Tajima.D/100
+
+colnames(td_Chr) <- paste0(pops, "_td")
+
+
+#Combine datasets together with our windows information from earlier into a big dataset.
+
+At_data_Chr <- as.tibble(data.frame(windows_Chr, td_Chr, nd_Chr, fst_Chr, dxy_Chr))
+
+
+#Nucleotide diversity pi
+
+
+# select nucleotide diversity data and calculate means
+At_data_Chr %>% dplyr::select(contains("pi")) %>% summarise_all(mean)
+
+
+# To plot this we need to use "gather" on the data
+
+pi_g_Chr <- At_data_Chr %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g_Chr
+
+
+pi_g_Chr$log_pi <- log10(pi_g_Chr$pi)
+
+a_pi_Chr <- ggplot(pi_g_Chr, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "orange", "blue", "lightblue")) +
+  theme_light() +
+  xlab(NULL) +
+  ggtitle("Nucleotide Diversity of VRN2 gene") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)) +
+  ylab("Log10(pi)") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+a_pi_Chr
+
+
+# Wilcoxon rank-sum test after filtering the data and two select two populations of your choice
+
+comparison_data_Chr <- pi_g_Chr %>% filter(populations %in% c("IT.S_pi", "SW.N_pi"))
+
+# Perform Wilcoxon rank-sum test
+wilcox_test_pi_Chr <- wilcox.test(log_pi ~ populations, data = comparison_data_Chr)
+
+# Print the test result
+print(wilcox_test_pi_Chr)
+
+# Kruskal-Wallis test
+kruskal_test_pi_Chr <- kruskal.test(log_pi ~ populations, data = pi_g_Chr)
+
+# Print the test result
+print(kruskal_test_pi_Chr)
+
+# generate boxplot again
+a_pi_Chr
+
+# Add Kruskal-Wallis test p-value to the plot
+a_pi_Chr + annotate("text", x = 1.5, y = max(pi_g_Chr$log_pi)-0.1, label = paste("Kruskal-Wallis p =", format.pval(kruskal_test_pi_Chr$p.value, digits = 3))) +
+  annotate("text", x = 1.6, y = max(pi_g_Chr$log_pi), label = paste("Wilcox test IT.S SW.N p =", format.pval(wilcox_test_pi_Chr$p.value, digits = 3)))
+
+
+###
+# Compare pi density distributions of populations
+###
+
+subset_IT_N_pi <- log(At_data_Chr$IT.N_pi[!is.na(At_data_Chr$IT.N_pi) & !is.nan(log(At_data_Chr$IT.N_pi))])
+subset_SW_N_pi <- log(At_data_Chr$SW.N_pi[!is.na(At_data_Chr$SW.N_pi) & !is.nan(log(At_data_Chr$SW.N_pi))])
+subset_IT_S_pi <- log(At_data_Chr$IT.S_pi[!is.na(At_data_Chr$IT.S_pi) & !is.nan(log(At_data_Chr$IT.S_pi))])
+subset_SW_S_pi <- log(At_data_Chr$SW.S_pi[!is.na(At_data_Chr$SW.S_pi) & !is.nan(log(At_data_Chr$SW.S_pi))])
+
+# Perform Kruskal-Wallis test
+pi_data <- list(
+  SW.N = subset_SW_N_pi,
+  IT.N = subset_IT_N_pi,
+  SW.S = subset_SW_S_pi,
+  IT.S = subset_IT_S_pi
+)
+
+kruskal_pi_dist <- kruskal.test(pi_data)
+
+# Print the Kruskal-Wallis test result
+print(kruskal_pi_dist)
+
+if (kruskal_pi_dist$p.value < 0.05) {
+  dunn_result <- dunn.test(pi_data)
+
+  # Print the post-hoc Dunn's test results
+  print(dunn_result)
+}
+
+
+# Plot the density
+plot(density(subset_IT_S_pi), col="orange", main = "Distribution log Nucleotide Diversity")
+lines(density(subset_SW_S_pi), col="lightblue")
+lines(density(subset_SW_N_pi), col="blue")
+lines(density(subset_IT_N_pi), col = "red")
+
+# Add legend
+legend("topright", legend=c("IT.N", "IT.S", "SW.N", "SW.S"),
+       col=c("red", "orange", "blue", "lightblue"), lty=1,
+       title="Population")
+
+legend("topleft",
+       legend=paste("Wilcox test IT.S SW.N p-value:", format(wilcox_test_pi_Chr$p.value, digits=3)),
+       bty="n",
+       cex=1,
+       y.intersp = 3,
+       yjust = 1.0)
+# Add legend for Kruskal-Wallis test p-value
+legend("topleft",
+       legend=paste("Kruskal-Wallis p-value:", format(kruskal_pi_dist$p.value, digits=3)),
+       bty="n",
+       cex=1)
+
+### 5Chromosomes_Fst.R ###
+
+# Load required libraries
+
+library(PopGenome)
+library(ggplot2)
+library (readr)
+library(tibble)
+library(vcfR)
+library(adegenet)
+library(factoextra)
+library(FactoMineR)
+library(tidyverse)
+library(ggrepel)
+library(gplots)
+library(StAMPP)
+library(RColorBrewer)
+library(dplyr)
+library(VariantAnnotation)
+library(tidyr)
+library(cowplot)
+
+
+
+#Stampp to calculate FST between populations
+# Load VCF file
+vcf_file <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+# Convert VCF to genlight object
+genlight_vcf <- vcfR2genlight(vcf_file)
+
+# Read population information from file
+pop <- read.table("sample_pop_it_swe.txt", header = TRUE)
+str(pop)
+
+# Extract population data
+pop1 <- pop$pop
+pop2 <- as.factor(pop1)
+genlight_vcf$pop <- pop2
+
+# Convert genlight to stampp object
+stampp_vcf <- stamppConvert(genlight_vcf, type = "genlight")
+
+# Calculate FST between populations
+stamppFst <- stamppFst(stampp_vcf, nboots = 100, percent = 95, nclusters = 8)
+stamppFst_matrix <- as.matrix(stamppFst$Fsts)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppFst_matrix) <- 0
+stamppFst_matrix[upper.tri(stamppFst_matrix)]  <- t(stamppFst_matrix)[upper.tri(stamppFst_matrix)]
+# Optional: order the names
+stamppFst_matrix <- stamppFst_matrix[order(row.names(stamppFst_matrix)), order(colnames(stamppFst_matrix))]
+
+# Make an FST heatmap
+heatmap(stamppFst_matrix,
+        symm = TRUE,
+        margins = c(10, 10),
+        main = "Genetic Divergence (FST) b/w A. thaliana Pop from Sweden & Italy ")
+
+
+#calculate genetic distance between individuals - nei's
+
+stamppNeisD <- stamppNeisD(stampp_vcf, pop = FALSE)
+stamppNeisD_matrix <- as.matrix(stamppNeisD)
+
+# Set diagonal to 0 and add symmetrical upper tri part of matrix
+diag(stamppNeisD_matrix) <- 0
+stamppNeisD_matrix[upper.tri(stamppNeisD_matrix)]  <- t(stamppNeisD_matrix)[upper.tri(stamppNeisD_matrix)]
+heatmap(stamppNeisD_matrix)
+
+# add row names
+colnames(stamppNeisD_matrix) <- rownames(stamppNeisD_matrix)
+
+# Create a heatmap with symmetric color scale
+heatmap(stamppNeisD_matrix,
+        symm = TRUE,
+        main = "Genetic Divergence (FST) b/w A. thaliana individuals from Sweden & Italy ")
+
+
+
+
+
+
+
+# FST calculation between populations
+
+at.VCF <- read.vcfR("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+
+
+#get chromosomes start and end points
+# Read the VCF file
+
+vcf <- readVcf("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz")
+# Extract chromosome names
+
+chromosomes <- seqlevels(vcf)
+# Initialize an empty data frame to store results
+
+chromosome_ranges <- data.frame(CHROM = character(), Start = numeric(), End = numeric(), stringsAsFactors = FALSE)
+# Iterate over chromosomes
+for (chrom in chromosomes) {
+  # Extract positions for the current chromosome
+
+  positions <- start(vcf[seqnames(vcf) == chrom])
+  # Append results to the data frame
+
+  chromosome_ranges <- rbind(chromosome_ranges, data.frame(CHROM = chrom, Start = min(positions), End = max(positions)))
+}
+# Display the results
+
+print(chromosome_ranges)
+
+
+# Estimate and plot Fst and Tajima'D and Neutrality stats using PopGenome
+
+At_Chr1 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="1", frompos=1373683, topos=30003409, include.unknown =  TRUE)
+At_Chr2 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="2", frompos=2332947, topos=11746232, include.unknown =  TRUE)
+At_Chr3 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="3", frompos=14093721, topos=20782721, include.unknown =  TRUE)
+At_Chr4 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="4", frompos=269237, topos=18328342, include.unknown =  TRUE)
+At_Chr5 <-readVCF("group_3_final_accession_1001genomes_snp-short-indel_only_ACGTN_Dp10GQ20Q30_NoIndel_Bialleleic_80PcMissing.vcf.gz",numcols=89,tid="5", frompos=1602625, topos=25995710, include.unknown =  TRUE)
+
+#Examining the variant data
+get.sum.data(At_Chr1)
+get.sum.data(At_Chr2)
+get.sum.data(At_Chr3)
+get.sum.data(At_Chr4)
+get.sum.data(At_Chr5)
+
+At_Chr1@n.biallelic.sites #529
+At_Chr2@n.biallelic.sites #222
+At_Chr3@n.biallelic.sites #84
+At_Chr4@n.biallelic.sites #281
+At_Chr5@n.biallelic.sites #403
+
+At_Chr1@n.polyallelic.sites #0
+At_Chr2@n.polyallelic.sites #0
+At_Chr3@n.polyallelic.sites #0
+At_Chr4@n.polyallelic.sites #0
+At_Chr5@n.polyallelic.sites #0
+
+#To check total number of sites
+At_Chr1@n.sites # 28629727
+At_Chr2@n.sites # 9413286
+At_Chr3@n.sites # 6689001
+At_Chr4@n.sites # 18059106
+At_Chr5@n.sites # 24393086
+
+##Deine populations in your dataset
+
+population_info <- read_delim("sample_pop_it_swe.txt", delim = "\t")
+
+# Get the data for the populations
+populations1 <- split(population_info$sample, population_info$pop)
+populations1
+
+At_Chr1 <- set.populations(At_Chr1, populations1, diploid = T)
+At_Chr1@populations
+
+At_Chr2 <- set.populations(At_Chr2, populations1, diploid = T)
+At_Chr2@populations
+
+At_Chr3 <- set.populations(At_Chr3, populations1, diploid = T)
+At_Chr3@populations
+
+At_Chr4 <- set.populations(At_Chr4, populations1, diploid = T)
+At_Chr4@populations
+
+At_Chr5 <- set.populations(At_Chr5, populations1, diploid = T)
+At_Chr5@populations
+
+#Setting up sliding windows
+
+# set chromosome size
+chr1 <- 28629727
+chr2 <- 9413286
+chr3 <- 6689002
+chr4 <- 18059106
+chr5 <- 24393086
+
+# set window size and window jump
+window_size <- 100
+window_jump <- 50
+
+#Chr 1
+# use seq to find the start points of each window
+window_start1 <- seq(from = 1, to = chr1, by = window_jump)
+# add the size of the window to each start point
+window_stop1 <- window_start1 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start1 > chr1)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop1 > chr1)
+# 2
+
+# remove windows from the start and stop vectors
+window_start1 <- window_start1[which(window_stop1 < chr1)]
+window_stop1 <- window_stop1[which(window_stop1 < chr1)]
+
+chr1 - window_stop1[length(window_stop1)]
+# 26
+
+# save as a data.frame
+windows1 <- data.frame(start = window_start1, stop = window_stop1,
+                       mid = window_start1 + (window_stop1-window_start1)/2)
+
+
+# chr 2
+# use seq to find the start points of each window
+window_start2 <- seq(from = 1, to = chr2, by = window_jump)
+# add the size of the window to each start point
+window_stop2 <- window_start2 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start2 > chr2)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop2 > chr2)
+# 2
+
+# remove windows from the start and stop vectors
+window_start2 <- window_start2[which(window_stop2 < chr2)]
+window_stop2 <- window_stop2[which(window_stop2 < chr2)]
+
+chr2 - window_stop2[length(window_stop2)]
+# 35
+
+# save as a data.frame
+windows2 <- data.frame(start = window_start2, stop = window_stop2,
+                       mid = window_start2 + (window_stop2-window_start2)/2)
+
+
+# chr 3
+# use seq to find the start points of each window
+window_start3 <- seq(from = 1, to = chr3, by = window_jump)
+# add the size of the window to each start point
+window_stop3 <- window_start3 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start3 > chr3)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop3 > chr3)
+# 2
+
+# remove windows from the start and stop vectors
+window_start3 <- window_start3[which(window_stop3 < chr3)]
+window_stop3 <- window_stop3[which(window_stop3 < chr3)]
+
+chr3 - window_stop3[length(window_stop3)]
+# 1
+
+# save as a data.frame
+windows3 <- data.frame(start = window_start3, stop = window_stop3,
+                       mid = window_start3 + (window_stop3-window_start3)/2)
+
+
+# chr 4
+# use seq to find the start points of each window
+window_start4 <- seq(from = 1, to = chr4, by = window_jump)
+# add the size of the window to each start point
+window_stop4 <- window_start4 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start4 > chr4)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop4 > chr4)
+# 2
+
+# remove windows from the start and stop vectors
+window_start4 <- window_start4[which(window_stop4 < chr4)]
+window_stop4 <- window_stop4[which(window_stop4 < chr4)]
+
+chr4 - window_stop4[length(window_stop4)]
+# 5
+
+# save as a data.frame
+windows4 <- data.frame(start = window_start4, stop = window_stop4,
+                       mid = window_start4 + (window_stop4-window_start4)/2)
+
+
+# chr 5
+# use seq to find the start points of each window
+window_start5 <- seq(from = 1, to = chr5, by = window_jump)
+# add the size of the window to each start point
+window_stop5 <- window_start5 + window_size
+
+# no windows start before the end of chromosome 4
+sum(window_start5 > chr5)
+# 0
+
+# but some window stop positions do occur past the final point
+sum(window_stop5 > chr5)
+# 2
+
+# remove windows from the start and stop vectors
+window_start5 <- window_start5[which(window_stop5 < chr5)]
+window_stop5 <- window_stop5[which(window_stop5 < chr5)]
+
+chr5 - window_stop5[length(window_stop5)]
+# 35
+
+# save as a data.frame
+windows5 <- data.frame(start = window_start5, stop = window_stop5,
+                       mid = window_start5 + (window_stop5-window_start5)/2)
+
+
+# make a sliding window dataset
+At_sw1 <- sliding.window.transform(At_Chr1, width = 100, jump = 50, type = 2)
+At_sw2 <- sliding.window.transform(At_Chr2, width = 100, jump = 50, type = 2)
+At_sw3 <- sliding.window.transform(At_Chr3, width = 100, jump = 50, type = 2)
+At_sw4 <- sliding.window.transform(At_Chr4, width = 100, jump = 50, type = 2)
+At_sw5 <- sliding.window.transform(At_Chr5, width = 100, jump = 50, type = 2)
+
+# calculate diversity statistics - nd
+At_sw1 <- diversity.stats(At_sw1, pi = TRUE)
+At_sw2 <- diversity.stats(At_sw2, pi = TRUE)
+At_sw3 <- diversity.stats(At_sw3, pi = TRUE)
+At_sw4 <- diversity.stats(At_sw4, pi = TRUE)
+At_sw5 <- diversity.stats(At_sw5, pi = TRUE)
+
+# calculate diversity statistics - FST
+At_sw1 <- F_ST.stats(At_sw1, mode = "nucleotide")
+At_sw2 <- F_ST.stats(At_sw2, mode = "nucleotide")
+At_sw3 <- F_ST.stats(At_sw3, mode = "nucleotide")
+At_sw4 <- F_ST.stats(At_sw4, mode = "nucleotide")
+At_sw5 <- F_ST.stats(At_sw5, mode = "nucleotide")
+
+
+#Extracting statistics for visualization
+
+# get the nucleotide diversity data.
+# extract nucleotide diversity and correct for window size
+nd1 <- At_sw1@nuc.diversity.within/100
+nd2 <- At_sw2@nuc.diversity.within/100
+nd3 <- At_sw3@nuc.diversity.within/100
+nd4 <- At_sw4@nuc.diversity.within/100
+nd5 <- At_sw5@nuc.diversity.within/100
+
+
+# Add the population names to each of estimate
+# make population name vector
+pops <- c("IT","SWE")
+
+# set population names
+colnames(nd1) <- paste0(pops, "_pi")
+colnames(nd2) <- paste0(pops, "_pi")
+colnames(nd3) <- paste0(pops, "_pi")
+colnames(nd4) <- paste0(pops, "_pi")
+colnames(nd5) <- paste0(pops, "_pi")
+
+# extract fst values
+fst1 <- t(At_sw1@nuc.F_ST.pairwise)
+fst2 <- t(At_sw2@nuc.F_ST.pairwise)
+fst3 <- t(At_sw3@nuc.F_ST.pairwise)
+fst4 <- t(At_sw4@nuc.F_ST.pairwise)
+fst5 <- t(At_sw5@nuc.F_ST.pairwise)
+
+# extract dxy - pairwise absolute nucleotide diversity
+dxy1 <- get.diversity(At_sw1, between = T)[[2]]/100
+dxy2 <- get.diversity(At_sw2, between = T)[[2]]/100
+dxy3 <- get.diversity(At_sw3, between = T)[[2]]/100
+dxy4 <- get.diversity(At_sw4, between = T)[[2]]/100
+dxy5 <- get.diversity(At_sw5, between = T)[[2]]/100
+
+
+#As with nucleotide diversity, we also corrected d_XY_ for the window size.
+
+# get column names
+x1 <- colnames(fst1)
+# does the same thing as above but by indexing the pops vector
+x1 <- sub("pop1", pops[1], x1)
+x1 <- sub("pop2", pops[2], x1)
+
+# replace forward slash
+x1 <- sub("/", "_", x1)
+# look at x1 to confirm the replacement has occurred
+x1
+
+# Change the column names of our two data matrices, before we put
+#everything together in our final dataset.
+colnames(fst1) <- paste0(x1, "_fst1")
+colnames(dxy1) <- paste0(x1, "_dxy1")
+
+colnames(fst2) <- paste0(x1, "_fst2")
+colnames(dxy2) <- paste0(x1, "_dxy2")
+
+colnames(fst3) <- paste0(x1, "_fst3")
+colnames(dxy3) <- paste0(x1, "_dxy3")
+
+colnames(fst4) <- paste0(x1, "_fst4")
+colnames(dxy4) <- paste0(x1, "_dxy4")
+
+colnames(fst5) <- paste0(x1, "_fst5")
+colnames(dxy5) <- paste0(x1, "_dxy5")
+
+# Combine nd, FST and d_XY_ datasets with our windows information from earlier into a big dataset.
+
+At_data1 <- as_tibble(data.frame(windows1, nd1, fst1, dxy1))
+At_data2 <- as_tibble(data.frame(windows2, nd2, fst2, dxy2))
+At_data3 <- as_tibble(data.frame(windows3, nd3, fst3, dxy3))
+At_data4 <- as_tibble(data.frame(windows4, nd4, fst4, dxy4))
+At_data5 <- as_tibble(data.frame(windows5, nd5, fst5, dxy5))
+
+#Visualizing the data - distributions
+
+# select nucleotide diversity data and calculate means
+dplyr::select(At_data1, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data2, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data3, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data4, contains("pi")) %>% dplyr::summarise_all(mean)
+dplyr::select(At_data5, contains("pi")) %>% dplyr::summarise_all(mean)
+
+# To plot this we need to use "gather" on the data
+
+pi_g1 <- At_data1 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g2 <- At_data2 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g3 <- At_data3 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g4 <- At_data4 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+pi_g5 <- At_data5 %>% dplyr::select(contains("pi")) %>% gather(key = "populations", value = "pi")
+
+pi_g1$log_pi <- log10(pi_g1$pi)
+pi_g2$log_pi <- log10(pi_g2$pi)
+pi_g3$log_pi <- log10(pi_g3$pi)
+pi_g4$log_pi <- log10(pi_g4$pi)
+pi_g5$log_pi <- log10(pi_g5$pi)
+
+wilcox_test_result1 <- wilcox.test(log_pi ~ populations, data = pi_g1)
+wilcox_test_result2 <- wilcox.test(log_pi ~ populations, data = pi_g2)
+wilcox_test_result3 <- wilcox.test(log_pi ~ populations, data = pi_g3)
+wilcox_test_result4 <- wilcox.test(log_pi ~ populations, data = pi_g4)
+wilcox_test_result5 <- wilcox.test(log_pi ~ populations, data = pi_g5)
+
+
+# Create the individual boxplot objects
+a1 <- ggplot(pi_g1, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 1") +
+  annotate("text", x = 1.5, y = max(pi_g1$log_pi), label = paste("p =", format.pval(wilcox_test_result1$p.value, digits = 3)))
+
+a2 <- ggplot(pi_g2, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 2") +
+  annotate("text", x = 1.5, y = max(pi_g2$log_pi), label = paste("p =", format.pval(wilcox_test_result2$p.value, digits = 3)))
+
+a3 <- ggplot(pi_g3, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 3") +
+  annotate("text", x = 1.5, y = max(pi_g3$log_pi), label = paste("p =", format.pval(wilcox_test_result3$p.value, digits = 3)))
+
+a4 <- ggplot(pi_g4, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 4") +
+  annotate("text", x = 1.5, y = max(pi_g4$log_pi), label = paste("p =", format.pval(wilcox_test_result4$p.value, digits = 3)))
+
+a5 <- ggplot(pi_g5, aes(populations, log_pi, fill = populations)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme_light() +
+  xlab(NULL) +
+  ylab("Log10(pi)") +
+  ggtitle("Chromosome 5") +
+  annotate("text", x = 1.5, y = max(pi_g5$log_pi), label = paste("p =", format.pval(wilcox_test_result5$p.value, digits = 3)))
+
+# Combine the individual boxplots into a single plot
+combined_plots <- plot_grid(a1, a2, a3, a4, a5, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Nucleotide diversity as a function of sample location", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+#Visualizing patterns along the chromosome
+
+#Let's have a look at how FST between Italian and Swedish populations varies along chromosomes.
+
+# chr 1
+b1 <- ggplot(At_data1, aes(mid/10^6, IT_SWE_fst1)) +
+  geom_line(colour = "red") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 1")
+
+# chr 2
+b2 <- ggplot(At_data2, aes(mid/10^6, IT_SWE_fst2)) +
+  geom_line(colour = "orange") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 2")
+
+# chr 3
+b3 <- ggplot(At_data3, aes(mid/10^6, IT_SWE_fst3)) +
+  geom_line(colour = "yellow2") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 3")
+
+# chr 4
+b4 <- ggplot(At_data4, aes(mid/10^6, IT_SWE_fst4)) +
+  geom_line(colour = "green") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 4")
+
+# chr 5
+b5 <- ggplot(At_data5, aes(mid/10^6, IT_SWE_fst5)) +
+  geom_line(colour = "blue") +
+  xlab("Position (Mb)") +
+  ylab(expression(italic(F)[ST])) +
+  theme_light() +
+  ggtitle("Chromosome 5")
+
+combined_plots <- plot_grid(b1, b2, b3, b4, b5, labels = "AUTO", nrow = 2)
+
+overall_title <- ggdraw() +
+  draw_label("Variation of FST between Italian and Swedish populations along chromosomes", size = 20, hjust = 0.5) +
+  theme(plot.title = element_text(face = "bold"))
+
+# Combine the overall title and individual boxplots
+combined_plots_with_title <- plot_grid(
+  overall_title,
+  combined_plots,
+  ncol = 1,
+  rel_heights = c(0.1, 0.9)
+)
+
+# Print the combined plot with an overall title
+print(combined_plots_with_title)
+
+
+#to plot nd, FST and d_XY_ to examine how they co-vary along the genome.
+#This requires a bit of data manipulation, but is relatively straightforward. We will break it down into steps.
+# select data of interest
+hs1 <- At_data1 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst1, IT_SWE_dxy1)
+hs2 <- At_data2 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst2, IT_SWE_dxy2)
+hs3 <- At_data3 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst3, IT_SWE_dxy3)
+hs4 <- At_data4 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst4, IT_SWE_dxy4)
+hs5 <- At_data5 %>% dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst5, IT_SWE_dxy5)
+
+# To set Fst values smaller than zero to zero in the specified columns of a data frame using dplyr and
+# the pipe operator %>%, you can use the mutate function along with across
+
+suppressWarnings({
+  hs1 <- At_data1 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst1, IT_SWE_dxy1) %>%
+    mutate(across(c(IT_SWE_fst1, IT_SWE_dxy1), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs2 <- At_data2 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst2, IT_SWE_dxy2) %>%
+    mutate(across(c(IT_SWE_fst2, IT_SWE_dxy2), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs3 <- At_data3 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst3, IT_SWE_dxy3) %>%
+    mutate(across(c(IT_SWE_fst3, IT_SWE_dxy3), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs4 <- At_data4 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst4, IT_SWE_dxy4) %>%
+    mutate(across(c(IT_SWE_fst4, IT_SWE_dxy4), ~ ifelse(. < 0, 0, .)))})
+
+suppressWarnings({
+  hs5 <- At_data5 %>%
+    dplyr::select(mid, IT_pi, SWE_pi, IT_SWE_fst5, IT_SWE_dxy5) %>%
+    mutate(across(c(IT_SWE_fst5, IT_SWE_dxy5), ~ ifelse(. < 0, 0, .)))})
+
+
+# use gather to rearrange everything
+hs_g1 <- gather(hs1, -mid, key = "stat", value = "value")
+hs_g2 <- gather(hs2, -mid, key = "stat", value = "value")
+hs_g3 <- gather(hs3, -mid, key = "stat", value = "value")
+hs_g4 <- gather(hs4, -mid, key = "stat", value = "value")
+hs_g5 <- gather(hs5, -mid, key = "stat", value = "value")
+
+
+# To take the logarithm of the value variable in your ggplot code, you can use the log10() function
+# within the aes() mapping.
+hs_g1$log_value <- log10(hs_g1$value)
+hs_g2$log_value <- log10(hs_g2$value)
+hs_g3$log_value <- log10(hs_g3$value)
+hs_g4$log_value <- log10(hs_g4$value)
+hs_g5$log_value <- log10(hs_g5$value)
+
+# rearrange everything so FST came at the top, pi beneath it and then finally, d_XY_
+# first make a factor
+x1 <- factor(hs_g1$stat)
+x2 <- factor(hs_g2$stat)
+x3 <- factor(hs_g3$stat)
+x4 <- factor(hs_g4$stat)
+x5 <- factor(hs_g5$stat)
+
+# then reorder the levels
+x1 <- factor(x1, levels(x1)[c(3, 1, 4, 2)])
+x2 <- factor(x2, levels(x2)[c(3, 1, 4, 2)])
+x3 <- factor(x3, levels(x3)[c(3, 1, 4, 2)])
+x4 <- factor(x4, levels(x4)[c(3, 1, 4, 2)])
+x5 <- factor(x5, levels(x5)[c(3, 1, 4, 2)])
+
+# add to data.frame
+hs_g1$stat <- x1
+hs_g2$stat <- x2
+hs_g3$stat <- x3
+hs_g4$stat <- x4
+hs_g5$stat <- x5
+
+# construct a plot with facets of fst, pi and dxy for each chromosome
+
+a1 <- ggplot(hs_g1, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 1") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a1
+
+a2 <- ggplot(hs_g2, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 2") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a2
+
+a3 <- ggplot(hs_g3, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 3") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a3
+
+a4 <- ggplot(hs_g4, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 4") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a4
+
+a5 <- ggplot(hs_g5, aes(mid/10^6, value, colour = stat)) + geom_line() +
+  ggtitle("Fst and Nucleotide diversity on Chromosome 5") +
+  facet_grid(stat~., scales = "free_y") +
+  xlab("Position (Mb)") +
+  theme_light() + theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold"))
+a5
+
+
+#### calculate neutrality statistics####
+At_sw1 <- neutrality.stats(At_sw1)
+At_sw2 <- neutrality.stats(At_sw2)
+At_sw3 <- neutrality.stats(At_sw3)
+At_sw4 <- neutrality.stats(At_sw4)
+At_sw5 <- neutrality.stats(At_sw5)
+
+#extract Tajma's D
+td1 <- At_sw1@Tajima.D/100
+td2 <- At_sw2@Tajima.D/100
+td3 <- At_sw3@Tajima.D/100
+td4 <- At_sw4@Tajima.D/100
+td5 <- At_sw5@Tajima.D/100
+
+# set population names
+colnames(td1) <- paste0(pops, "_td")
+colnames(td2) <- paste0(pops, "_td")
+colnames(td3) <- paste0(pops, "_td")
+colnames(td4) <- paste0(pops, "_td")
+colnames(td5) <- paste0(pops, "_td")
+
+#Coerce lists and matrices to data frames
+ara_data1 <- as.tibble(data.frame(windows1, td1,nd1))
+ara_data2 <- as.tibble(data.frame(windows2, td2,nd2))
+ara_data3 <- as.tibble(data.frame(windows3, td3,nd3))
+ara_data4 <- as.tibble(data.frame(windows4, td4,nd4))
+ara_data5 <- as.tibble(data.frame(windows5, td5,nd5))
+
+
+# TajimaD
+
+# Select data of interest
+hs_td1 <- ara_data1 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td2 <- ara_data2 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td3 <- ara_data3 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td4 <- ara_data4 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+hs_td5 <- ara_data5 %>%
+  dplyr::select(mid, IT_td, SWE_td)
+
+# Use gather to rearrange everything
+hs_td_g1 <- gather(hs_td1, -mid, key = "stat", value = "value")
+hs_td_g2 <- gather(hs_td2, -mid, key = "stat", value = "value")
+hs_td_g3 <- gather(hs_td3, -mid, key = "stat", value = "value")
+hs_td_g4 <- gather(hs_td4, -mid, key = "stat", value = "value")
+hs_td_g5 <- gather(hs_td5, -mid, key = "stat", value = "value")
+
+# Reorder the levels of the stat factor
+hs_td_g1$stat <- factor(hs_td_g1$stat, levels = c("IT_td", "SWE_td"))
+hs_td_g2$stat <- factor(hs_td_g2$stat, levels = c("IT_td", "SWE_td"))
+hs_td_g3$stat <- factor(hs_td_g3$stat, levels = c("IT_td", "SWE_td"))
+hs_td_g4$stat <- factor(hs_td_g4$stat, levels = c("IT_td", "SWE_td"))
+hs_td_g5$stat <- factor(hs_td_g5$stat, levels = c("IT_td", "SWE_td"))
+
+# Take the logarithm of the value variable
+hs_td_g1$log_value <- log10(hs_td_g1$value)
+hs_td_g2$log_value <- log10(hs_td_g2$value)
+hs_td_g3$log_value <- log10(hs_td_g3$value)
+hs_td_g4$log_value <- log10(hs_td_g4$value)
+hs_td_g5$log_value <- log10(hs_td_g5$value)
+
+# Construct a plot with facets
+
+a_td1 <- ggplot(hs_td_g1, aes(mid / 10^6, log_value, colour = stat)) +  geom_line() +
+  facet_wrap(~stat, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td1
+
+a_td2 <- ggplot(hs_td_g2, aes(mid / 10^6, log_value, colour = stat)) +  geom_line() +
+  facet_wrap(~stat, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td2
+
+a_td3 <- ggplot(hs_td_g3, aes(mid / 10^6, log_value, colour = stat)) +  geom_line() +
+  facet_wrap(~stat, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td3
+
+a_td4 <- ggplot(hs_td_g4, aes(mid / 10^6, log_value, colour = stat)) +  geom_line() +
+  facet_wrap(~stat, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td4
+
+a_td5 <- ggplot(hs_td_g5, aes(mid / 10^6, log_value, colour = stat)) +  geom_line() +
+  facet_wrap(~stat, scales = "free_y", ncol = 1) +
+  xlab("Position (Mb)") +
+  theme_light()
+a_td5
+
+### gwas.R ###
+# Manhattan plot for gea
+
+# Load the libraries
+library(qqman)
+library(cowplot)
+library(ggrepel)
+library(dplyr)
+
+# Read GWAS output file created using gemma
+gwas_data_bio19 <- read.table("gwas_project_result.assoc.txt", header = TRUE)
+
+# Make the Manhattan plot on the gwas Results dataset
+manhattan(gwas_data_bio19, chr="chr", bp="ps", snp="rs", p="p_wald" )
+
+# modify colour of points
+manhattan(x = gwas_data_bio19, chr = "chr", bp = "ps", p = "p_wald", snp = "rs", col = c("blue", "red"), logp = TRUE)
+
+# Multiple testing correction in GWAS (Bonferroni correction)
+pval_bonf = 0.05/dim(gwas_data_bio19)[[1]]
+
+
+#adding multiple-testing-corrected p-value line to the plot
+manhattan(gwas_data_bio19, chr="chr", bp="ps", snp="rs", p="p_wald",
+          suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
+          annotatePval = -log10(pval_bonf), col = c("blue4", "red"),
+          ylim = c(0, max(-log10(pval_bonf)) + 5),
+          main = "GEA Manhattan Plot with Bonferroni correction                                                                                A")
+
+
+# Read GWAS output file created using gemma
+gwas_data_bio19 <- read.table("C:/Users/aless/OneDrive/Desktop/Projekt/gwas_project_result.assoc.txt", header = TRUE)
+
+# Make the Manhattan plot on the gwas Results dataset
+manhattan(gwas_data_bio19, chr="chr", bp="ps", snp="rs", p="p_wald" )
+
+# modify colour of points
+manhattan(x = gwas_data_bio19, chr = "chr", bp = "ps",
+          p = "p_wald", snp = "rs", col = c("blue4", "red"), logp = TRUE)
+
+#Bonferroni correction
+
+# Make the Manhattan plot using FDR-corrected p-values
+pvals_bonf <- p.adjust(gwas_data_bio19$p_wald, method = "bonferroni")
+
+# Add FDR-corrected p-value threshold line to the plot
+pval_bonf <- 0.05  # Desired FDR threshold, you can adjust this if needed
+
+# Add the adjusted p-values as a new column to the data frame
+gwas_data_bio19$pvals_bonf <- pvals_bonf
+
+# Create the Manhattan plot with the new adjusted p-values column
+manhattan(gwas_data_bio19, chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
+          suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
+          annotatePval = -log10(pval_bonf),
+          col = c("blue4", "red"),
+          main = "GEA Manhattan Plot with FDR correction                                                                                 B")
+
+
+#FDR correction
+
+# Make the Manhattan plot using FDR-corrected p-values
+pvals_fdr <- p.adjust(gwas_data_bio19$p_wald, method = "BH")
+
+# Add FDR-corrected p-value threshold line to the plot
+pval_fdr <- 0.05  # Desired FDR threshold
+
+# Add the adjusted p-values as a new column to the data frame
+gwas_data_bio19$pvals_fdr <- pvals_fdr
+
+# Create the Manhattan plot with the new adjusted p-values column
+manhattan(gwas_data_bio19, chr = "chr", bp = "ps", snp = "rs", p = "pvals_fdr",
+          suggestiveline = -log10(pval_fdr), genomewideline = FALSE,
+          annotatePval = -log10(pval_fdr),
+          col = c("blue4", "red"),
+          main = "GEA Manhattan Plot with FDR correction                                                                                 B")
+
+
+####################################
+# GWAS manhatten Plot & SNP annotation
+# using ggrepel, dplyr, ggplot
+
+# Prepare the dataset
+gwas <- gwas_data_bio19 %>%
+  # Compute chromosome size
+  group_by(chr) %>%
+  summarise(chr_len=max(ps)) %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  dplyr::select(-chr_len) %>%
+  # Add this info to the initial dataset
+  left_join(gwas_data_bio19, ., by=c("chr"="chr")) %>%
+  # Add a cumulative position of each SNP
+  arrange(chr, ps) %>%
+  mutate(Chromosome=ps+tot,   # Fixed BPcum assignment
+         is_annotate=ifelse(-log10(pvals_fdr)>1.2, "yes", "no"))
+
+# Prepare X axis
+axisdf <- gwas %>% group_by(chr) %>% summarize(center=( max(Chromosome) + min(Chromosome) ) / 2 )
+# extract labels column
+rs<-gwas$rs
+
+# plot using ggplot
+
+ggplot(gwas, aes(x=Chromosome, y=-log10(pvals_fdr))) +
+  geom_point(aes(color=as.factor(chr)), alpha=0.8, size=1.3) +
+  scale_color_manual(values = rep(c("red", "blue"), 22 )) +
+  scale_x_continuous(label = axisdf$chr, breaks= axisdf$center) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.8)), breaks = seq(0, 5, 0.5),
+                     limits = c(0,1.5)) +
+  geom_label_repel(data=subset(gwas, is_annotate=="yes"), aes(label=rs), size=2) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black") +
+  theme_bw() +
+  theme(
+    legend.position="none",
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.text = element_text(size = 8)
+  )
+
+### GWAS_manhatten_AnnotateSNP.R ###
+
+# Load the library
+library(qqman)
+
+# Read GWAS output file created using gemma
+gwas_data_bio17 <- read.table("gwas_project_result.assoc.txt", header = TRUE)
+
+# Make the Manhattan plot on the gwasResults dataset
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot", chr="chr", bp="ps", snp="rs", p="p_wald" )
+
+# modify colour of points
+manhattan(x = gwas_data_bio17, main="GWAS Manhatten Plot", chr = "chr", bp = "ps", p = "p_wald",
+          snp = "rs", col = c("blue4", "orange3"), logp = TRUE)
+
+##########Bonferroni correction############
+
+# Make the Manhattan plot using FDR-corrected p-values
+pvals_bonf <- p.adjust(gwas_data_bio17$p_wald, method = "bonferroni")
+
+# Add FDR-corrected p-value threshold line to the plot
+pval_bonf <- 0.05  # Desired FDR threshold, you can adjust this if needed
+
+# Add the adjusted p-values as a new column to the data frame
+gwas_data_bio17$pvals_bonf <- pvals_bonf
+
+# Create the Manhattan plot with the new adjusted p-values column
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with Boneferri Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
+          suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
+          annotatePval = -log10(pval_bonf),
+          col = c("blue4", "orange3"))
+
+# Create the Manhattan plot with expanded datapoints on the y-axis
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with Boneferri Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_bonf",
+          suggestiveline = -log10(pval_bonf), genomewideline = FALSE,
+          annotatePval = -log10(pval_bonf),
+          col = c("blue4", "orange3"),
+          ylim = c(0, max(-log10(pval_bonf)) + 5))  # Expand the y-axis range
+
+##########FDR correction############
+
+# Make the Manhattan plot using FDR-corrected p-values
+pvals_fdr <- p.adjust(gwas_data_bio17$p_wald, method = "BH")
+
+# Add FDR-corrected p-value threshold line to the plot
+pval_fdr <- 0.05  # Desired FDR threshold, you can adjust this if needed
+
+# Add the adjusted p-values as a new column to the data frame
+gwas_data_bio17$pvals_fdr <- pvals_fdr
+
+# Create the Manhattan plot with the new adjusted p-values column
+manhattan(gwas_data_bio17, main="GWAS Manhatten Plot with FDR Correction", chr = "chr", bp = "ps", snp = "rs", p = "pvals_fdr",
+          suggestiveline = -log10(pval_fdr), genomewideline = FALSE,
+          annotatePval = -log10(pval_fdr),
+          col = c("blue4", "orange3"))
+
+###
+# GWAS manhatten Plot & SNP annotation
+# using ggrepel, dplyr, ggplot
+###
+
+library(ggrepel)
+
+# Load the dplyr package
+library(dplyr)
+
+# Prepare the dataset
+gwas <- gwas_data_bio17 %>%
+  # Compute chromosome size
+  group_by(chr) %>%
+  summarise(chr_len=max(ps)) %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  dplyr::select(-chr_len) %>%
+  # Add this info to the initial dataset
+  left_join(gwas_data_bio17, ., by=c("chr"="chr")) %>%
+  # Add a cumulative position of each SNP
+  arrange(chr, ps) %>%
+  mutate(Chromosome=ps+tot,   # Fixed BPcum assignment
+         is_annotate=ifelse(-log10(pvals_fdr)>1.2, "yes", "no"))   # Changed 'pvals_fdr' to 'Pvals_fdr'
+
+# Prepare X axis
+axisdf <- gwas %>% group_by(chr) %>% summarize(center=( max(Chromosome) + min(Chromosome) ) / 2 )
+# extract labels column
+rs<-gwas$rs
+
+# plot using ggplot
+
+ggplot(gwas, aes(x=Chromosome, y=-log10(pvals_fdr))) +
+  geom_point(aes(color=as.factor(chr)), alpha=0.8, size=1.3) +
+  scale_color_manual(values = rep(c("black", "orange"), 22 )) +
+  scale_x_continuous(label = axisdf$chr, breaks= axisdf$center) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.8)), breaks = seq(0, 5, 0.5),
+                     limits = c(0,1.5)) +
+  geom_label_repel(data=subset(gwas, is_annotate=="yes"), aes(label=rs), size=2) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "red") +
+  ggtitle("GWAS Manhatten Plot with SNP Annotation") +
+  theme_bw() +
+  theme(
+    legend.position="none",
+    panel.border = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.text = element_text(size = 8)
+  )
+

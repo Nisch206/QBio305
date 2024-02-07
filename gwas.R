@@ -1,8 +1,5 @@
 # Manhattan plot for gea
 
-# Set the directory
-setwd("C:/Users/aless/OneDrive/Desktop/Projekt")
-
 # Load the libraries 
 library(qqman)
 library(cowplot)

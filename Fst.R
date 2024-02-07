@@ -16,11 +16,6 @@ library(gplots)
 library(StAMPP)
 library(RColorBrewer)
 
-
-# set working directory
-
-setwd("C:/Users/aless/OneDrive/Desktop/Project_pop&qGen/Fst")
-getwd()
 ########################################################################
 ##            Stampp to calculate FST between populations             ##
 ##                         and individuals                            ##
